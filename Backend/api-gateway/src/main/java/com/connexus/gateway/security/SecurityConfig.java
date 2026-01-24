@@ -50,6 +50,13 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * CORS Configuration
+     * Step 1:- add configuration for cors
+     * Step 2:- add cors filter in security web filter chain
+     * Step 3:- set llow credentials to true.
+     * corsConfig.setAllowCredentials(true);
+      */
     @Bean
     public org.springframework.web.cors.reactive.CorsWebFilter corsWebFilter() {
         org.springframework.web.cors.CorsConfiguration corsConfig = new org.springframework.web.cors.CorsConfiguration();
