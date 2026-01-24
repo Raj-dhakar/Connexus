@@ -8,14 +8,12 @@ import com.connexus.user.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth/users")
 @RequiredArgsConstructor
+// @CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
     private final AuthService authService;
@@ -30,6 +28,6 @@ public class AuthController {
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
         String token = authService.login(loginRequestDto);
         return new ResponseEntity<>(LoginResponseDto.builder()
-                .jwtToken(token).build(),HttpStatus.OK);
+                .jwtToken(token).build(), HttpStatus.OK);
     }
 }

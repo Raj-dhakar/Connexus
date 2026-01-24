@@ -25,7 +25,9 @@ function Signin() {
       const response = await axios.post("http://localhost:9090/auth/users/login", {
         email: email,
         password: password
-      });
+      }, { withCredentials: true });
+
+      console.log(response);
 
       // Axios throws an error for non-2xx responses, so if we reach here, it's a success
 
@@ -49,7 +51,8 @@ function Signin() {
       if (error.response && error.response.status === 401) {
         toast.error("Wrong credentials")
       } else {
-        toast.error("Connecting to server failed")
+        // console.log("Raj ::" + error.response.data.error.message)
+        toast.error(error.response.data.error.message)
       }
     }
   }
