@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { Button, Grid, TextField } from '@mui/material'
 import React, { useState } from 'react'
 import linkedin from "../images/linkedin.png"
@@ -15,25 +16,39 @@ function Signup() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
 
-    const signUp = () => {
+    const signUp = async () => {
         if (!firstName || !lastName || !email || !password) {
             toast.warning("Please fill all fields")
             return
         }
 
-        // Mock Signup
-        const mockUser = {
-            username: `${firstName} ${lastName}`,
-            designation: "Frontend Developer", // Default designation since we removed the field
-            profile_image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-            email: email,
-            // In a real app we would hash the password, but here we just ignore it for the mock login
+        try {
+            const response = await axios.post("http://localhost:9090/auth/users/signup", {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password
+            });
+
+            if (response.status === 201) {
+                toast.success("Account created successfully!")
+                // The backend likely returns the user object, but we might just redirect for now
+                // or we could auto-login if the backend returns a token (based on LoginResponseDto)
+                // Assuming it just returns UserDto for now as per AuthController
+
+                setTimeout(() => {
+                    navigate("/")
+                }, 1000)
+            }
+
+        } catch (error) {
+            console.error("Signup failed", error)
+            if (error.response && error.response.status === 400) {
+                toast.error(error.response.data.message || "Signup failed. User might already exist.")
+            } else {
+                toast.error("Connecting to server failed")
+            }
         }
-        localStorage.setItem("user", JSON.stringify(mockUser))
-        toast.success("Account created successfully!")
-        setTimeout(() => {
-            navigate("/main")
-        }, 1000)
     }
 
     return (
