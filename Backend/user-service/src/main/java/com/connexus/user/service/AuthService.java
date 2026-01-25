@@ -1,13 +1,12 @@
 package com.connexus.user.service;
 
-
-import com.connexus.user.dto.LoginRequestDto;
-import com.connexus.user.dto.SignupRequestDto;
-import com.connexus.user.dto.UserDto;
+import com.connexus.user.dto.*;
+import com.connexus.user.entity.Recruiter;
 import com.connexus.user.entity.User;
 import com.connexus.user.entity.UserRole;
 import com.connexus.user.exception.BadRequestException;
 import com.connexus.user.exception.ResourceNotFoundException;
+import com.connexus.user.repository.RecruiterRepository;
 import com.connexus.user.repository.UserRepository;
 import com.connexus.user.security.JwtService;
 import com.connexus.user.security.UserPrincipal;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
 
 import java.util.List;
+import java.util.concurrent.RecursiveAction;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +32,31 @@ public class AuthService {
     private final ModelMapper modelMapper;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RecruiterRepository recruiterRepository;
 
-    public UserDto signUp(SignupRequestDto signupRequestDto) {
+    public RecruiterDto signUpRecruiter(RecruiterSignupRequestDto dto) {
+        boolean exists = userRepository.existsByEmail(dto.getEmail());
+        if (exists) {
+            throw new BadRequestException("User already exists, cannot signup again.");
+        }
+
+        User user = modelMapper.map(dto, User.class);
+        user.setPassword(PasswordUtil.hashPassword(dto.getPassword()));
+        user.setUserRole(UserRole.ROLE_RECRUITER);
+        User savedUser = userRepository.save(user);
+
+        // Create Recruiter Profile
+        Recruiter recruiter = new Recruiter();
+        recruiter.setCompanyName(dto.getCompanyName());
+        recruiter.setUser(savedUser);
+        recruiterRepository.save(recruiter);
+
+        return modelMapper.map(savedUser, RecruiterDto.class);
+    }
+
+    public UserDto signUpUser(SignupRequestDto signupRequestDto) {
         boolean exists = userRepository.existsByEmail(signupRequestDto.getEmail());
-        if(exists) {
+        if (exists) {
             throw new BadRequestException("User already exists, cannot signup again.");
         }
 
@@ -48,26 +69,27 @@ public class AuthService {
 
     public String login(LoginRequestDto loginRequestDto) {
         User user = userRepository.findByEmail(loginRequestDto.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: "+loginRequestDto.getEmail()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with email: " + loginRequestDto.getEmail()));
 
         boolean isPasswordMatch = PasswordUtil.checkPassword(loginRequestDto.getPassword(), user.getPassword());
 
-        if(!isPasswordMatch) {
+        if (!isPasswordMatch) {
             throw new BadRequestException("Incorrect password");
         }
 
-        Authentication holder=new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-        log.info("*****Before -  is authenticated {}",holder.isAuthenticated());//false
+        Authentication holder = new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(),
+                loginRequestDto.getPassword());
+        log.info("*****Before -  is authenticated {}", holder.isAuthenticated());// false
         Authentication fullyAuth = authenticationManager.authenticate(holder);
-        //=> authentication success -> create JWT
-        log.info("*****After -  is authenticated {}",fullyAuth.isAuthenticated());//true
-        log.info("**** auth {} ",fullyAuth);//principal : user details , null : pwd , Collection<GrantedAuth>
-        log.info("***** class of principal {}",fullyAuth.getPrincipal().getClass());//com.healthcare.security.UserPrincipal
-        //downcast Object -> UserPrincipal
-        UserPrincipal principal=(UserPrincipal) fullyAuth.getPrincipal();
+        // => authentication success -> create JWT
+        log.info("*****After -  is authenticated {}", fullyAuth.isAuthenticated());// true
+        log.info("**** auth {} ", fullyAuth);// principal : user details , null : pwd , Collection<GrantedAuth>
+        log.info("***** class of principal {}", fullyAuth.getPrincipal().getClass());// com.healthcare.security.UserPrincipal
+        // downcast Object -> UserPrincipal
+        UserPrincipal principal = (UserPrincipal) fullyAuth.getPrincipal();
 
         return jwtService.generateAccessToken(user);
     }
-
 
 }
