@@ -1,30 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Navbar from './Navbar'
 import Home from './Home'
+import useAuth from '../features/auth/useAuth'
 
 function Main() {
 
-  const [userData, setUserData] = useState(null)
-
-  useEffect(() => {
-    const userStr = localStorage.getItem("user")
-    if (userStr) {
-      setUserData(JSON.parse(userStr))
-    } else {
-      // Fallback if no user is found
-      setUserData({
-        username: "Guest User",
-        designation: "Visitor",
-        profile_image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-      })
-    }
-  }, [])
+  const { user } = useAuth();
 
   return (
     <div>
-      {/* Only render if userData exists to avoid errors in children */}
-      {userData && <Navbar userData={userData} />}
-      {userData && <Home userData={userData} />}
+      {/* Only render if user exists to avoid errors in children */}
+      {user && <Navbar userData={user} />}
+      {user && <Home userData={user} />}
     </div>
   )
 }

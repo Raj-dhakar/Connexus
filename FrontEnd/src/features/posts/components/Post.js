@@ -22,7 +22,7 @@ function Post(props, ref) {
     }
 
     function afterOpenModal() {
-        subtitle.style.color = 'grey';
+        if (subtitle) subtitle.style.color = 'grey';
     }
 
     function closeModal() {

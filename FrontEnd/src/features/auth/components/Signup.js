@@ -1,11 +1,11 @@
-import axios from 'axios'
-import { Button, Grid, TextField } from '@mui/material'
 import React, { useState } from 'react'
-import linkedin from "../images/linkedin.png"
-import developer from "../images/developer.png"
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Button, Grid, TextField } from '@mui/material'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { Link, useNavigate } from 'react-router-dom'
+import authApi from '../../../api/authApi'
+import linkedin from "../../../images/linkedin.png"
+import developer from "../../../images/developer.png"
 
 function Signup() {
 
@@ -23,18 +23,17 @@ function Signup() {
         }
 
         try {
-            const response = await axios.post("http://localhost:9090/auth/users/signup", {
+            const userData = {
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
                 password: password
-            });
+            }
+
+            const response = await authApi.signup(userData);
 
             if (response.status === 201) {
                 toast.success("Account created successfully!")
-                // The backend likely returns the user object, but we might just redirect for now
-                // or we could auto-login if the backend returns a token (based on LoginResponseDto)
-                // Assuming it just returns UserDto for now as per AuthController
 
                 setTimeout(() => {
                     navigate("/")
