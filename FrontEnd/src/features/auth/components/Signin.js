@@ -6,10 +6,12 @@ import { useNavigate, Link } from 'react-router-dom'
 import authApi from '../../../api/authApi'
 import linkedin from "../../../images/linkedin.png"
 import developer from "../../../images/developer.png"
+import useAuth from '../useAuth'
 
 function Signin() {
 
     const navigate = useNavigate()
+    const { login } = useAuth();
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -67,7 +69,9 @@ function Signin() {
 
                     <Button onClick={signIn} size='large' variant='contained' sx={{ width: "400px", borderRadius: "50px", mt: "25px", height: "50px" }}>Signin</Button>
                     <div style={{ marginTop: "20px" }}>
-                        New to Connexus? <Link to="/signup" style={{ textDecoration: "none", color: "#B26F28", fontWeight: "bold" }}>Join now</Link>
+                        New to Connexus? <Link to="/signup" style={{ textDecoration: "none", color: "#B26F28", fontWeight: "bold", marginRight: "10px" }}>User Signup</Link>
+                        |
+                        <Link to="/recruiter/signup" style={{ textDecoration: "none", color: "#B26F28", fontWeight: "bold", marginLeft: "10px" }}>Recruiter Signup</Link>
                     </div>
                 </Grid>
                 <Grid item xs={6}>

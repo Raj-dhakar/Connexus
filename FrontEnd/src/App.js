@@ -1,12 +1,13 @@
 import React from 'react'
-import Main from './components/Main'
+import Main from './features/layout/Main'
 import { Route, Routes } from 'react-router-dom'
 import Signin from './features/auth/components/Signin'
 import Signup from './features/auth/components/Signup'
-import Connection from './components/Connection'
-import Invitation from './components/Invitation'
-import Network from './components/Network'
-import Message from './components/Message'
+import RecruiterSignup from './features/auth/components/RecruiterSignup'
+import Connection from './features/network/Connection'
+import Invitation from './features/network/Invitation'
+import Network from './features/network/Network'
+import Message from './features/messaging/Message'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path='/' element={<Signin />} />
         <Route path='/signup' element={<Signup />} />
+        <Route path='/recruiter/signup' element={<RecruiterSignup />} />
         <Route path='/main' element={<Main />} />
         <Route path='/connect' element={<Connection />} />
         <Route path="/invite" element={<Invitation />} />

@@ -1,6 +1,6 @@
 import React from 'react'
 import Sidebar from './Sidebar'
-import Middle from '../features/posts/components/Middle'
+import Middle from '../posts/components/Middle'
 import { Grid } from '@mui/material'
 import RightBar from './RightBar'
 
