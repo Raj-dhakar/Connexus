@@ -6,7 +6,7 @@ const useAuth = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const userStr = localStorage.getItem("user");
+        const userStr = sessionStorage.getItem("user");
         if (userStr) {
             setUser(JSON.parse(userStr));
         } else {
@@ -21,14 +21,14 @@ const useAuth = () => {
     }, []);
 
     const login = (userData, token) => {
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("token", token);
+        sessionStorage.setItem("user", JSON.stringify(userData));
+        sessionStorage.setItem("token", token);
         setUser(userData);
     };
 
     const logout = () => {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("token");
         navigate("/");
     };
 

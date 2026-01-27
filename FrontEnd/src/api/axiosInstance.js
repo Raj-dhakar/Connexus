@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token'); // or retrieve from state/cookie
+        const token = sessionStorage.getItem('token'); // or retrieve from state/cookie
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -29,8 +29,8 @@ axiosInstance.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             // Token expired or invalid
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
             window.location.href = '/'; // Hard redirect to login
         }
         return Promise.reject(error);

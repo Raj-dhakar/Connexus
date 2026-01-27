@@ -17,27 +17,38 @@ function Signin() {
     const [password, setPassword] = useState("")
 
     const signIn = async () => {
+        console.log("SignIn button clicked");
         if (!email || !password) {
+            console.log("Email or password missing");
             toast.warning("Please enter email and password")
             return
         }
 
         try {
+            console.log("Attempting to login with", email);
             const response = await authApi.login(email, password);
+            console.log("Login response received:", response);
+
+            console.log(response.data.data.role);
 
             // Success: Cookie is set by backend automatically (HttpOnly)
-            const mockUser = {
-                username: email.split("@")[0],
-                designation: "Developer",
-                profile_image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-                email: email
-            }
-            localStorage.setItem("user", JSON.stringify(mockUser))
+            // But we also need the token for axiosInstance
+            const responseData = response.data.data;
+            sessionStorage.setItem("user", JSON.stringify(responseData))
+            sessionStorage.setItem("token", responseData.jwtToken)
 
-            toast.success("Login Successful!")
+            // Show role immediately
+            toast.success(`Login Successful! Role: ${responseData.role}`)
+            console.log(responseData.role);
+
+            // Wait 5 seconds before redirecting
             setTimeout(() => {
-                navigate("/main")
-            }, 500)
+                if (responseData.role === 'ROLE_RECRUITER') {
+                    navigate("/recruiter/dashboard")
+                } else {
+                    navigate("/main")
+                }
+            }, 5000)
 
         } catch (error) {
             console.error("Login failed", error)

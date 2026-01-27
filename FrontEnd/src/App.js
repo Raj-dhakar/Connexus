@@ -8,6 +8,7 @@ import Connection from './features/network/Connection'
 import Invitation from './features/network/Invitation'
 import Network from './features/network/Network'
 import Message from './features/messaging/Message'
+import RecruiterDashboard from './features/recruiter/RecruiterDashboard'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/invite" element={<Invitation />} />
         <Route path="/network" element={<Network />} />
         <Route path='/message' element={<Message />} />
+        <Route path='/recruiter/dashboard' element={<RecruiterDashboard />} />
       </Routes>
     </div>
   )
