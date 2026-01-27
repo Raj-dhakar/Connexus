@@ -24,7 +24,7 @@ import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 
 function Signup() {
-    const [credentials, setCredentials] = useState({ username: "", email: "", password: "", profile_image: "" });
+    const [credentials, setCredentials] = useState({ firstName: "", lastName: "", email: "", password: "" });
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
@@ -32,26 +32,52 @@ function Signup() {
         setCredentials({ ...credentials, [e.target.name]: e.target.value });
     };
 
-    const handleFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            setCredentials({ ...credentials, profile_image: e.target.files[0] });
+    const validateInputs = () => {
+        const { firstName, lastName, email, password } = credentials;
+
+        if (!firstName) {
+            toast.error("First Name is required");
+            return false;
         }
+        if (firstName.length <= 3) {
+            toast.error("First Name must be greater than 3 characters");
+            return false;
+        }
+        if (!lastName) {
+            toast.error("Last Name is required");
+            return false;
+        }
+        if (lastName.length <= 3) {
+            toast.error("Last Name must be greater than 3 characters");
+            return false;
+        }
+        if (!email) {
+            toast.error("Email is required");
+            return false;
+        }
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            toast.error("Invalid email address");
+            return false;
+        }
+        if (!password) {
+            toast.error("Password is required");
+            return false;
+        }
+        return true;
     };
 
     const signup = async () => {
-        const formData = new FormData();
-        formData.append("username", credentials.username);
-        formData.append("email", credentials.email);
-        formData.append("password", credentials.password);
-        formData.append("file", credentials.profile_image);
+        if (!validateInputs()) return;
 
+        const { firstName, lastName, email, password } = credentials;
+        let response = null;
         try {
-            await authApi.signup(formData);
+            response = await authApi.signup({ firstName, lastName, email, password });
             toast.success("Account created successfully!");
             navigate("/");
         } catch (error) {
             console.error("Signup error", error);
-            toast.error("Registration failed. Try again.");
+            toast.error(error.response?.data?.error?.message || "Registration failed. Try again.");
         }
     };
 
@@ -101,16 +127,28 @@ function Signup() {
                     </Typography>
                 </Box>
 
-                <TextField
-                    fullWidth
-                    placeholder="Username"
-                    name="username"
-                    value={credentials.username}
-                    onChange={handleChange}
-                    InputProps={{
-                        startAdornment: <InputAdornment position="start"><PersonIcon color="action" /></InputAdornment>,
-                    }}
-                />
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <TextField
+                        fullWidth
+                        placeholder="First Name"
+                        name="firstName"
+                        value={credentials.firstName}
+                        onChange={handleChange}
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start"><PersonIcon color="action" /></InputAdornment>,
+                        }}
+                    />
+                    <TextField
+                        fullWidth
+                        placeholder="Last Name"
+                        name="lastName"
+                        value={credentials.lastName}
+                        onChange={handleChange}
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start"><PersonIcon color="action" /></InputAdornment>,
+                        }}
+                    />
+                </Box>
 
                 <TextField
                     fullWidth
@@ -141,23 +179,6 @@ function Signup() {
                         ),
                     }}
                 />
-
-                <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    startIcon={<PersonIcon />}
-                    sx={{
-                        justifyContent: 'flex-start',
-                        color: 'text.secondary',
-                        borderColor: 'rgba(255,255,255,0.1)',
-                        py: 1.5,
-                        '&:hover': { borderColor: 'primary.main', color: 'primary.main' }
-                    }}
-                >
-                    {credentials.profile_image ? credentials.profile_image.name : "Upload Profile Picture"}
-                    <input type="file" hidden onChange={handleFileChange} />
-                </Button>
 
                 <Button
                     variant="contained"
