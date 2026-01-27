@@ -37,14 +37,14 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 // specfiy authorization rules (pathMatchers equivalent to requestMatchers)
                 .authorizeExchange(auth -> auth
-                        .pathMatchers(HttpMethod.GET, "/users", "/demo").permitAll()
-                        .pathMatchers("/auth/users/signup", "auth/recruiters/signup", "/auth/users/login",
-                                "auth/recruiters/login")
+                        .pathMatchers(HttpMethod.GET, "/users/all", "/demo").permitAll()
+                        .pathMatchers("/auth/users/signup", "/auth/recruiters/signup", "/auth/users/login",
+                                "/auth/recruiters/login")
                         .permitAll() // UMS login/register
-                        .pathMatchers("/recruiters/**", "/users/**").hasRole("ADMIN")
-                        .pathMatchers("/posts/**", "/likes/**", "/users/**").hasRole("USER")
+                        .pathMatchers("/recruiters/**").permitAll()
+                        .pathMatchers("/posts/**", "/likes/**", "/users/**").permitAll()
                         // authenticate any other remaining request
-                        .anyExchange().authenticated())
+                        .anyExchange().permitAll())
 
                 .addFilterAt(customJwtFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();

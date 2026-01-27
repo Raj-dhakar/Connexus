@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { jwtDecode } from "jwt-decode";
 import {
     Button,
     TextField,
@@ -37,26 +38,52 @@ function Signin() {
     const signin = async () => {
         try {
             const response = await authApi.login(credentials.email, credentials.password);
-            console.log(response);
-            console.log(response.data.data.role);
-            if (response.data && response.data.data) { // Check for nested data structure
-                const { jwtToken, ...userData } = response.data.data;
+            const jwtToken = response.data.data.jwtToken;
 
-                // normalize profileImage to profile_image if needed properly
-                if (userData.profileImage) {
-                    userData.profile_image = userData.profileImage;
-                }
+            console.log("JWT Token:", jwtToken);
+            console.log("Response:", response.data.data);
 
-                Cookies.set('user', JSON.stringify(userData), { expires: 7 });
+
+            if (jwtToken) {
+                // 1. Store Token
                 Cookies.set('token', jwtToken, { expires: 7 });
 
-                toast.success("Welcome back to the future!");
-                if (response.data.data.role == "ROLE_USER")
-                    navigate("/main");
-                else
-                    navigate("/recruiter/dashboard")
+                // 2. Decode Token (as per requirement)
+                let decoded = null;
+                try {
+                    decoded = jwtDecode(jwtToken);
+                    console.log("Decoded Token:", decoded);
+                } catch (decodeError) {
+                    console.error("Token decoding failed", decodeError);
+                }
+
+                // 3. Fetch User Profile
+                const userResponse = await authApi.getMe(decoded.user_id);
+                console.log("User Response:", userResponse);
+
+                if (userResponse.data) {
+                    const userData = userResponse.data.data;
+
+                    // Normalize profile image
+                    if (userData.profileImage) {
+                        userData.profile_image = userData.profileImage;
+                    }
+
+                    // 4. Store Full Profile
+                    Cookies.set('user', JSON.stringify(userData), { expires: 7 });
+
+                    toast.success("Welcome back to the future!");
+
+                    if (userData.role === "ROLE_USER") {
+                        navigate("/main");
+                    } else {
+                        navigate("/recruiter/dashboard");
+                    }
+                } else {
+                    toast.error("Failed to fetch user profile.");
+                }
             } else {
-                toast.error("Login failed. Please check your credentials.");
+                toast.error("Login failed. No token received.");
             }
         } catch (error) {
             console.error("Login error", error);

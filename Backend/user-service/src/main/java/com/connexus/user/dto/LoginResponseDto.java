@@ -8,4 +8,5 @@ import lombok.Getter;
 @Data
 public class LoginResponseDto {
     private String jwtToken;
+
 }
