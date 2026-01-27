@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import config from '../config/env';
 
 const axiosInstance = axios.create({
@@ -11,7 +12,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = sessionStorage.getItem('token'); // or retrieve from state/cookie
+        const token = Cookies.get('token'); // Retrieve from cookie
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -27,10 +28,10 @@ axiosInstance.interceptors.response.use(
         return response;
     },
     (error) => {
-        if (error.response && error.response.status === 401) {
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             // Token expired or invalid
-            sessionStorage.removeItem('token');
-            sessionStorage.removeItem('user');
+            Cookies.remove('token');
+            Cookies.remove('user');
             window.location.href = '/'; // Hard redirect to login
         }
         return Promise.reject(error);
