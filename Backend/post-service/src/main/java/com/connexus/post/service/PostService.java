@@ -1,13 +1,19 @@
 package com.connexus.post.service;
 
+import com.connexus.post.auth.UserContextHolder;
+import com.connexus.post.clients.ConnectionsClient;
+import com.connexus.post.dto.PersonDto;
 import com.connexus.post.dto.PostCreateRequestDto;
 import com.connexus.post.dto.PostDto;
 import com.connexus.post.entity.Post;
+import com.connexus.post.event.PostCreatedEvent;
 import com.connexus.post.exception.ResourceNotFoundException;
 import com.connexus.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.event.KafkaEvent;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,14 +26,24 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final ModelMapper modelMapper;
+    private final ConnectionsClient connectionClient;
+    private final KafkaTemplate<Long, PostCreatedEvent> kafkaTemplate;
 
-    public PostDto createPost(PostCreateRequestDto postDto, Long userId) {
-
+    public PostDto createPost(PostCreateRequestDto postDto) {
+        Long userId = UserContextHolder.getCurrentUserId();
         Post post = modelMapper.map(postDto, Post.class);
         post.setUserId(userId);
-
         Post savedPost = postRepository.save(post);
+        // Get first degree connections
+        // List<PersonDto> firstConnections = connectionClient.getFirstConnections();
+        // notify all users
+        PostCreatedEvent postCreatedEvent = PostCreatedEvent.builder()
+                .postId(savedPost.getId())
+                .creatorId(userId)
+                .title(savedPost.getTitle())
+                .build();
 
+        kafkaTemplate.send("post-created-topic", postCreatedEvent);
         return modelMapper.map(savedPost, PostDto.class);
     }
 

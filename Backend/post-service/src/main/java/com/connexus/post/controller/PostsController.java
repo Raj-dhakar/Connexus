@@ -1,5 +1,6 @@
 package com.connexus.post.controller;
 
+import com.connexus.post.auth.UserContextHolder;
 import com.connexus.post.dto.PostCreateRequestDto;
 import com.connexus.post.dto.PostDto;
 import com.connexus.post.service.PostService;
@@ -19,13 +20,15 @@ public class PostsController {
     private final PostService postsService;
 
     @PostMapping
-    public ResponseEntity<PostDto> createPost(@RequestBody PostCreateRequestDto postDto) {
-        PostDto createdPost = postsService.createPost(postDto, 1L);
+    public ResponseEntity<PostDto> createPost(@RequestBody PostCreateRequestDto postDto, HttpServletRequest servletRequest) {
+
+        PostDto createdPost = postsService.createPost(postDto);
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDto> getPost(@PathVariable Long postId) {
+    public ResponseEntity<PostDto> getPost(@PathVariable Long postId, HttpServletRequest servletRequest) {
+        Long userId = UserContextHolder.getCurrentUserId();
         PostDto postDto = postsService.getPostById(postId);
         return ResponseEntity.ok(postDto);
     }

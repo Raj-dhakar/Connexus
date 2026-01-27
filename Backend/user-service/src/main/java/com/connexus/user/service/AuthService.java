@@ -1,5 +1,6 @@
 package com.connexus.user.service;
 
+import com.connexus.user.client.ConnectionsClient;
 import com.connexus.user.dto.*;
 import com.connexus.user.entity.Recruiter;
 import com.connexus.user.entity.User;
@@ -18,10 +19,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
-
-import java.util.List;
-import java.util.concurrent.RecursiveAction;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +30,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RecruiterRepository recruiterRepository;
+    private final ConnectionsClient connectionsClient;
 
     public RecruiterDto signUpRecruiter(RecruiterSignupRequestDto dto) {
         boolean exists = userRepository.existsByEmail(dto.getEmail());
@@ -50,6 +48,14 @@ public class AuthService {
         recruiter.setCompanyName(dto.getCompanyName());
         recruiter.setUser(savedUser);
         recruiterRepository.save(recruiter);
+        // Create person node 
+        PersonDto personDto = PersonDto.builder()
+        		.userId(savedUser.getId())
+        		.name(savedUser.getFirstName() + " " + savedUser.getLastName())
+        		.role(savedUser.getUserRole().name())
+        		.build();
+        log.info("Person dto : {}" + personDto);
+        connectionsClient.createPersonNode(personDto);
 
         return modelMapper.map(savedUser, RecruiterDto.class);
     }
@@ -64,6 +70,14 @@ public class AuthService {
         user.setPassword(PasswordUtil.hashPassword(signupRequestDto.getPassword()));
         user.setUserRole(UserRole.ROLE_USER);
         User savedUser = userRepository.save(user);
+        // Create person node 
+        PersonDto personDto = PersonDto.builder()
+        		.userId(savedUser.getId())
+        		.name(savedUser.getFirstName() + " " + savedUser.getLastName())
+        		.role(savedUser.getUserRole().name())
+        		.build();
+        log.info("Person dto : {}" + personDto);
+        connectionsClient.createPersonNode(personDto);
         return modelMapper.map(savedUser, UserDto.class);
     }
 
