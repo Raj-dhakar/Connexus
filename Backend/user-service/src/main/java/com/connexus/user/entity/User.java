@@ -37,4 +37,8 @@ public class User extends BaseEntity{
 
     @Column(unique = true, length = 14)
     private String phone;
+
+    private String designation;
+
+    private String profileImage;
 }

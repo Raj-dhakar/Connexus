@@ -1,32 +1,84 @@
-import React from 'react'
-import reactjs from "../../images/reactjs.png"
-import profile from "../../images/profile.png"
-import { Link } from 'react-router-dom'
+import React from 'react';
+import {
+    Card,
+    CardContent,
+    CardMedia,
+    Typography,
+    Avatar,
+    Box,
+    Divider,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemButton
+} from '@mui/material';
+import { Link } from 'react-router-dom';
+import PeopleIcon from '@mui/icons-material/People';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+
+import { motion } from 'framer-motion';
 
 function Sidebar({ userData }) {
+    // Gradient banner or use an image
+    const bannerImage = "https://source.unsplash.com/random/800x200?technology";
 
     return (
-        <div style={{ backgroundColor: "white", border: "1px solid #D6D6D6", width: "230px", height: "370px", borderRadius: "10px", marginLeft: "55px" }}>
-            <img style={{ height: "65px", width: "230px", borderTopRightRadius: "10px", borderTopLeftRadius: "10px" }} src={reactjs} alt="banner" />
-            <div style={{ textAlign: "center" }}>
-                <img src={userData?.profile_image ?? profile} style={{ width: "65px", borderRadius: "40px" }} alt="profile" />
-                <h3 >{userData?.username}</h3>
-            </div>
-            <h4 style={{ color: "#6F6F6F", textAlign: "center" }}>{userData?.designation}</h4>
-            <div style={{ color: "#6F6F6F", borderTop: "1px solid #D6D6D6", paddingLeft: "10px" }}>
-                <Link to="/connect" style={{ textDecoration: "none" }} state={{
-                    username: userData?.username,
-                    designation: userData?.designation,
-                    profile_img: userData?.profile_image
-                }}><h5 style={{ fontWeight: "100" }}>Connections</h5></Link>
-                <Link to="/invite" style={{ textDecoration: "none", color: "grey" }} state={{
-                    username: userData?.username,
-                    designation: userData?.designation,
-                    profile_img: userData?.profile_image
-                }} ><h5 style={{ fontWeight: "100" }}>Invitations</h5></Link>
-            </div>
-        </div>
-    )
+        <Card
+            component={motion.div}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+        >
+            <CardMedia
+                component="img"
+                height="80"
+                image={bannerImage}
+                alt="banner"
+                sx={{ backgroundColor: 'primary.main' }} // Fallback color
+            />
+            <CardContent sx={{ pt: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', mt: -5 }}>
+                <Avatar
+                    src={userData?.profile_image}
+                    sx={{ width: 80, height: 80, border: '4px solid white', mb: 1 }}
+                />
+                <Typography variant="h6" fontWeight="bold">
+                    {userData?.username || "User"}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                    {userData?.designation || "No Designation"}
+                </Typography>
+            </CardContent>
+
+            <Divider />
+
+            <List disablePadding>
+                <ListItemButton
+                    component={Link}
+                    to="/connect"
+                    state={{
+                        username: userData?.username,
+                        designation: userData?.designation,
+                        profile_img: userData?.profile_image
+                    }}
+                >
+                    <PeopleIcon color="action" sx={{ mr: 2 }} />
+                    <ListItemText primary="Connections" primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} />
+                </ListItemButton>
+
+                <ListItemButton
+                    component={Link}
+                    to="/invite"
+                    state={{
+                        username: userData?.username,
+                        designation: userData?.designation,
+                        profile_img: userData?.profile_image
+                    }}
+                >
+                    <PersonAddIcon color="action" sx={{ mr: 2 }} />
+                    <ListItemText primary="Invitations" primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }} />
+                </ListItemButton>
+            </List>
+        </Card>
+    );
 }
 
-export default Sidebar
+export default Sidebar;

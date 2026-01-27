@@ -19,8 +19,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @Slf4j
 public class SecurityConfiguration {
 
-	
-
 	/*
 	 * Configure Spring sec filter chain as a spring bean (@Bean) , to override the
 	 * spring sec defaults - Disable CSRF protection - Disable HttpSession - Disable
@@ -34,11 +32,10 @@ public class SecurityConfiguration {
 		log.info("********configuring spring sec filter chain*******");
 		// disable CSRF protection
 		http.csrf(csrf -> csrf.disable())
-		// disable HttpSession creation
-		.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-		// add url based authentication n authorization rules
-		.authorizeHttpRequests(request ->
-				request.anyRequest().permitAll());				
+				// disable HttpSession creation
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				// add url based authentication n authorization rules
+				.authorizeHttpRequests(request -> request.anyRequest().permitAll());
 		return http.build();
 	}
 
@@ -52,4 +49,5 @@ public class SecurityConfiguration {
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
+
 }

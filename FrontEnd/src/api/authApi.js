@@ -9,6 +9,9 @@ const authApi = {
     },
     signupRecruiter: (recruiterData) => {
         return axiosInstance.post('/auth/recruiters/signup', recruiterData);
+    },
+    getMe: (userId) => {
+        return axiosInstance.get(`/users/${userId}`);
     }
 };
 

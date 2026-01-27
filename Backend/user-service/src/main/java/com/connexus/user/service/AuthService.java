@@ -81,7 +81,7 @@ public class AuthService {
         return modelMapper.map(savedUser, UserDto.class);
     }
 
-    public String login(LoginRequestDto loginRequestDto) {
+    public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         User user = userRepository.findByEmail(loginRequestDto.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found with email: " + loginRequestDto.getEmail()));
@@ -103,7 +103,11 @@ public class AuthService {
         // downcast Object -> UserPrincipal
         UserPrincipal principal = (UserPrincipal) fullyAuth.getPrincipal();
 
-        return jwtService.generateAccessToken(user);
+        String token = jwtService.generateAccessToken(user);
+
+        return LoginResponseDto.builder()
+                .jwtToken(token)
+                .build();
     }
 
 }
