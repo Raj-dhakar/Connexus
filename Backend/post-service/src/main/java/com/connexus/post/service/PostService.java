@@ -63,4 +63,13 @@ public class PostService {
                 .map((element) -> modelMapper.map(element, PostDto.class))
                 .collect(Collectors.toList());
     }
+
+	public List<PostDto> getAllPost() {
+		List<Post> posts = postRepository.findAll();
+
+        return posts
+                .stream()
+                .map((element) -> modelMapper.map(element, PostDto.class))
+                .collect(Collectors.toList());
+	}
 }

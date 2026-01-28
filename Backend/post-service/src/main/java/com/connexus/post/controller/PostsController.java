@@ -32,6 +32,13 @@ public class PostsController {
         PostDto postDto = postsService.getPostById(postId);
         return ResponseEntity.ok(postDto);
     }
+    
+    @GetMapping()
+    public ResponseEntity<List<PostDto>> getAllPost() {
+        Long userId = UserContextHolder.getCurrentUserId();
+        List<PostDto> allPosts  = postsService.getAllPost();
+        return ResponseEntity.ok(allPosts);
+    }
 
     @GetMapping("/users/{userId}/allPosts")
     public ResponseEntity<List<PostDto>> getAllPostsOfUser(@PathVariable Long userId) {
