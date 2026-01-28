@@ -25,6 +25,11 @@ public class ConnectionsController {
         return ResponseEntity.ok(connectionsService.getIncomingConnectionRequests());
     }
 
+    @GetMapping("/others")
+    public ResponseEntity<List<Person>> getOtherPeople() {
+        return ResponseEntity.ok(connectionsService.getOtherPeople());
+    }
+
     @PostMapping("/request/{userId}")
     public ResponseEntity<Boolean> sendConnectionRequest(@PathVariable Long userId) {
         return ResponseEntity.ok(connectionsService.sendConnectionRequest(userId));

@@ -24,10 +24,17 @@ public interface PersonNodeRepository extends Neo4jRepository<Person, Long> {
                         "RETURN personB")
         List<Person> getFirstDegreeConnections(Long userId);
 
-        @Query("MATCH (p:Person)-[:REQUESTED_TO]->(currentUser:Person) " +
+        @Query("MATCH (p:Person)-[:REQUESTED_TO]-(currentUser:Person) " +
                         "WHERE currentUser.userId = $userId " +
                         "RETURN p")
         List<Person> getIncomingConnectionRequests(Long userId);
+
+        @Query("MATCH (p:Person) " +
+                        "WHERE p.userId <> $userId " +
+                        "AND NOT EXISTS { MATCH (p)-[:CONNECTED_TO]-(:Person {userId: $userId}) } " +
+                        "AND NOT EXISTS { MATCH (p)-[:REQUESTED_TO]-(:Person {userId: $userId}) } " +
+                        "RETURN p")
+        List<Person> getOtherPeople(Long userId);
 
         @Query("MATCH (p1:Person)-[r:REQUESTED_TO]->(p2:Person) " +
                         "WHERE p1.userId = $senderId AND p2.userId = $receiverId " +

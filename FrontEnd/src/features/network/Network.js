@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
     Button,
     Grid,
-    Paper,
     Typography,
     Avatar,
     Box,
@@ -12,7 +11,7 @@ import {
     Container,
     useTheme
 } from '@mui/material';
-import Navbar from '../layout/Navbar';
+// import Navbar from '../layout/Navbar';
 import { Link, useLocation } from 'react-router-dom';
 import { Message as MessageIcon } from '@mui/icons-material';
 import connectionApi from '../../api/connectionApi';

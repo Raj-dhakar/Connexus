@@ -36,6 +36,13 @@ public class ConnectionsService {
         return personRepository.getIncomingConnectionRequests(userId);
     }
 
+    public List<Person> getOtherPeople() {
+        Long userId = UserContextHolder.getCurrentUserId();
+        log.info("Getting other people for user with id: {}", userId);
+
+        return personRepository.getOtherPeople(userId);
+    }
+
     public Boolean sendConnectionRequest(Long receiverId) {
         Long senderId = UserContextHolder.getCurrentUserId();
         String senderRole = UserContextHolder.getCurrentUserRole();

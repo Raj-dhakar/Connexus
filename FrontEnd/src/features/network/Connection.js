@@ -1,43 +1,63 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import connectionApi from '../../api/connectionApi'
 import { Avatar, Button, List, ListItem, ListItemText, Paper } from '@mui/material'
 import { useLocation } from 'react-router-dom'
 
 function Connection() {
 
-    const location = useLocation()
-    const currentUserUid = "mock-current-uid" // Mock ID
+    // const location = useLocation()
+    const [userData, setUserData] = useState([])
+    const [loading, setLoading] = useState(true)
 
-    const [userData] = useState([
-        {
-            id: "3",
-            username: "Sundar Pichai",
-            designation: "CEO of Google",
-            profile_image: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Sundar_pichai.png"
-        },
-        {
-            id: "4",
-            username: "Satya Nadella",
-            designation: "CEO of Microsoft",
-            profile_image: "https://upload.wikimedia.org/wikipedia/commons/7/78/MS-Exec-Nadella-Satya-2017-08-31-22_%28cropped%29.jpg"
+    useEffect(() => {
+        const fetchRecommendations = async () => {
+            try {
+                const response = await connectionApi.getOtherPeople();
+                const data = Array.isArray(response.data) ? response.data : response.data.data || [];
+                setUserData(data);
+            } catch (error) {
+                console.error("Failed to fetch recommendations", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRecommendations();
+    }, []);
+
+    const sendRequest = async (userId) => {
+        try {
+            await connectionApi.sendConnectionRequest(userId);
+            // Optimistically remove user from list
+            setUserData(userData.filter(user => (user.userId || user.id) !== userId));
+            console.log(`Request sent to user ${userId}`)
+        } catch (error) {
+            console.error("Failed to send request", error);
         }
-    ])
-
-
-    const sendRequest = (userId) => {
-        console.log(`Request sent to user ${userId} from ${location.state?.username}`)
     }
 
 
+    if (loading) return <div>Loading recommendations...</div>;
+
+    if (userData.length === 0) return <div style={{ padding: "20px", textAlign: "center" }}>No suggestions available.</div>;
+
     return (
         <div style={{ padding: "20px", backgroundColor: "#F6F7F3", height: "100vh" }}>
-            {userData.filter(user => user.id !== currentUserUid).map((otherUser) => {
+            <div style={{ fontWeight: "bold", marginBottom: "10px", color: "#666" }}>People you may know</div>
+            {userData.map((otherUser) => {
                 return (
-                    <Paper key={otherUser.id} sx={{ mb: 2 }}>
+                    <Paper key={otherUser.id || otherUser.userId} sx={{ mb: 2 }}>
                         <List>
                             <ListItem>
-                                <Avatar src={otherUser.profile_image} />
-                                <ListItemText primary={otherUser.username} secondary={otherUser.designation} sx={{ ml: 2 }} />
-                                <Button onClick={() => sendRequest(otherUser.id)} variant='outlined' size="small">Connect</Button>
+                                <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                                    {otherUser.name ? otherUser.name.charAt(0).toUpperCase() : '?'}
+                                </Avatar>
+                                <ListItemText
+                                    primary={otherUser.name || otherUser.username || "Unknown"}
+                                    secondary={otherUser.role || otherUser.designation || "Member"}
+                                    sx={{ ml: 2 }}
+                                />
+                                <Button onClick={() => sendRequest(otherUser.userId || otherUser.id)} variant='outlined' size="small">Connect</Button>
                             </ListItem>
                         </List>
                     </Paper>

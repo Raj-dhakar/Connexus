@@ -5,7 +5,7 @@ import connectionApi from '../../api/connectionApi'
 
 function Invitation({ showEmptyMessage = true }) {
 
-    const location = useLocation()
+    // const location = useLocation()
     const [requests, setRequests] = useState([])
     const [loading, setLoading] = useState(true)
 
