@@ -36,6 +36,21 @@ function Signin() {
     };
 
     const signin = async () => {
+        const { email, password } = credentials;
+
+        if (!email) {
+            toast.error("Email is required");
+            return;
+        }
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            toast.error("Invalid email address");
+            return;
+        }
+        if (!password) {
+            toast.error("Password is required");
+            return;
+        }
+
         try {
             const response = await authApi.login(credentials.email, credentials.password);
             const jwtToken = response.data.data.jwtToken;
@@ -83,7 +98,7 @@ function Signin() {
                     toast.error("Failed to fetch user profile.");
                 }
             } else {
-                toast.error("Login failed. No token received.");
+                toast.error(response.data.error.message);
             }
         } catch (error) {
             console.error("Login error", error);

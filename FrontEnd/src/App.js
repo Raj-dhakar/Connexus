@@ -13,6 +13,9 @@ import Message from './features/messaging/Message';
 import RecruiterDashboard from './features/recruiter/RecruiterDashboard';
 import { AnimatePresence } from 'framer-motion';
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
   const location = useLocation();
 
@@ -34,6 +37,7 @@ function App() {
           </Routes>
         </AnimatePresence>
       </Box>
+      <ToastContainer position="top-right" autoClose={3000} />
     </ThemeProvider>
   );
 }
