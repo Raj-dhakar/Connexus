@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -41,8 +42,17 @@ public class User extends BaseEntity{
     private String phone;
 
     private String designation;
+    
+    private String about;
+    
+    private String location;
+    
+    private Set<String> skills;
 
     private String profileImage;
+    
+    @Enumerated(EnumType.STRING)
+    private ExperienceType expType;
     
     @JsonIgnore
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

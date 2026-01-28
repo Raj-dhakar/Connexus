@@ -1,6 +1,9 @@
 package com.connexus.user.dto;
 
 import java.time.LocalDate;
+import java.util.Set;
+
+import com.connexus.user.entity.ExperienceType;
 
 import lombok.Data;
 
@@ -17,4 +20,8 @@ public class UserDto {
     private String username;
     private String designation;
     private String profileImage;
+    private String about;
+    private String location;
+    private Set<String> skills;
+    private ExperienceType expType;
 }

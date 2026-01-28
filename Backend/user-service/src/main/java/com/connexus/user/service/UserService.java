@@ -82,6 +82,22 @@ public class UserService {
         if (userDto.getProfileImage() != null) {
             user.setProfileImage(userDto.getProfileImage());
         }
+        
+        if (userDto.getAbout() != null) {
+            user.setAbout(userDto.getAbout());
+        }
+
+        if (userDto.getLocation() != null) {
+            user.setLocation(userDto.getLocation());
+        }
+
+        if (userDto.getSkills() != null) {
+            user.setSkills(userDto.getSkills());
+        }
+
+        if (userDto.getExpType() != null) {
+            user.setExpType(userDto.getExpType());
+        }
 
         User updatedUser = userRepository.save(user);
         return modelMapper.map(updatedUser, UserDto.class);
