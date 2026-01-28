@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     AppBar,
@@ -27,6 +27,8 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import CakeIcon from '@mui/icons-material/Cake';
 import PlaceIcon from '@mui/icons-material/Place'; // Placeholder for location if needed
 
+import postApi from '../../../api/postApi'; // Import API
+
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
@@ -34,6 +36,30 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const ProfileDialog = ({ open, onClose, user }) => {
     const theme = useTheme();
     const { user: currentUser } = useAuth();
+    const [userPosts, setUserPosts] = useState([]);
+
+    useEffect(() => {
+        const fetchUserPosts = async () => {
+            if (user && user.id) {
+                try {
+                    const response = await postApi.getPostsByUser(user.id);
+                    console.log("User posts:", response);
+                    if (response.data && Array.isArray(response.data.data)) {
+                        setUserPosts(response.data.data);
+                    } else if (Array.isArray(response.data)) {
+                        setUserPosts(response.data);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch user posts for profile:", error);
+                    setUserPosts([]); // Reset on error
+                }
+            }
+        };
+
+        if (open) { // Only fetch when dialog opens
+            fetchUserPosts();
+        }
+    }, [user, open]);
 
     if (!user) return null;
 
@@ -117,13 +143,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                             variant="filled"
                                             sx={{ fontWeight: 'bold', px: 2, py: 2.5, borderRadius: 2 }}
                                         />
-                                        {/* Explicit Role Display */}
-                                        <Chip
-                                            label={user.role || 'USER'}
-                                            color="secondary"
-                                            variant="outlined"
-                                            sx={{ fontWeight: 'bold', px: 2, py: 2.5, borderRadius: 2 }}
-                                        />
+
                                     </Stack>
 
                                     {/* Action Buttons (Placeholder) */}
@@ -150,11 +170,12 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                                 <Typography variant="body2">Born {user.dob}</Typography>
                                             </Stack>
                                         )}
-                                        {/* Placeholder Location */}
-                                        <Stack direction="row" spacing={1.5} alignItems="center">
-                                            <PlaceIcon color="action" fontSize="small" />
-                                            <Typography variant="body2">San Francisco, CA</Typography>
-                                        </Stack>
+                                        {user.location && (
+                                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                                <PlaceIcon color="action" fontSize="small" />
+                                                <Typography variant="body2">{user.location}</Typography>
+                                            </Stack>
+                                        )}
 
                                         <Divider sx={{ my: 1 }} />
 
@@ -186,10 +207,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                         About
                                     </Typography>
                                     <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                                        {/* Placeholder 'About' Text - since UserDto doesn't have Bio yet */}
-                                        Passionate {user.designation || 'professional'} with a focus on delivering high-quality results.
-                                        Dedicated to continuous learning and contribution to the team.
-                                        {/* Lorem ipsum for filler if needed, but keeping it generic is better */}
+                                        {user.about || 'No about information available.'}
                                     </Typography>
                                 </Paper>
 
@@ -229,24 +247,58 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                     </Grid>
                                 </Paper>
 
+                                {/* Skills Section */}
+                                <Paper elevation={0} sx={{ p: 4, borderRadius: 4, mb: 3 }}>
+                                    <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
+                                        Skills
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                        {user.skills && user.skills.length > 0 ? (
+                                            user.skills.map((skill, index) => (
+                                                <Chip
+                                                    key={index}
+                                                    label={skill}
+                                                    color="primary"
+                                                    variant="outlined"
+                                                    sx={{ fontWeight: 'medium', borderRadius: 2 }}
+                                                />
+                                            ))
+                                        ) : (
+                                            <Typography variant="body2" color="text.secondary">
+                                                No skills listed.
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                </Paper>
+
                                 {/* Activity / Stats Placeholder */}
                                 <Paper elevation={0} sx={{ p: 4, borderRadius: 4 }}>
                                     <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
                                         Activity
                                     </Typography>
                                     <Grid container spacing={2}>
-                                        {[1, 2, 3].map((item) => (
-                                            <Grid item xs={12} key={item}>
-                                                <Box sx={{ p: 2, bgcolor: '#f1f5f9', borderRadius: 2 }}>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Posted a new update • 2 days ago
-                                                    </Typography>
-                                                    <Typography variant="body1" fontWeight="medium" sx={{ mt: 0.5 }}>
-                                                        Excited to announce our new feature launch at Connexus! #ProductLaunch #Tech
-                                                    </Typography>
-                                                </Box>
+                                        {userPosts.length > 0 ? (
+                                            userPosts.map((post) => (
+                                                <Grid item xs={12} key={post.postId}>
+                                                    <Box sx={{ p: 2, bgcolor: '#f1f5f9', borderRadius: 2 }}>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {/* Placeholder date since DTO might not have formatted date yet, or use current time as fallback */}
+                                                            Posted an update
+                                                        </Typography>
+                                                        <Typography variant="body1" fontWeight="medium" sx={{ mt: 0.5 }}>
+                                                            {post.title && <span style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px' }}>{post.title}</span>}
+                                                            {post.description}
+                                                        </Typography>
+                                                    </Box>
+                                                </Grid>
+                                            ))
+                                        ) : (
+                                            <Grid item xs={12}>
+                                                <Typography variant="body1" color="text.secondary">
+                                                    No recent activity to show.
+                                                </Typography>
                                             </Grid>
-                                        ))}
+                                        )}
                                     </Grid>
                                 </Paper>
                             </Box>

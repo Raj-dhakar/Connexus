@@ -6,6 +6,9 @@ const postApi = {
     },
     createPost: (postData) => {
         return axiosInstance.post('/posts', postData);
+    },
+    getPostsByUser: (userId) => {
+        return axiosInstance.get(`/posts/users/${userId}/allPosts`);
     }
 };
 

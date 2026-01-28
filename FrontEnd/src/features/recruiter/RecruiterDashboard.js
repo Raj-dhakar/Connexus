@@ -153,10 +153,14 @@ function RecruiterDashboard() {
             (u.lastName && u.lastName.toLowerCase().includes(searchQuery.toLowerCase()));
 
         const matchesSkills = selectedSkills.length === 0 ||
-            selectedSkills.some(skill => u.skills && u.skills.includes(skill));
+            selectedSkills.some(selected =>
+                u.skills && u.skills.some(userSkill => userSkill.toLowerCase() === selected.toLowerCase())
+            );
 
         const matchesLocation = selectedLocations.length === 0 ||
-            (u.location && selectedLocations.some(loc => u.location.includes(loc.split(',')[0]))); // Simple match
+            (u.location && selectedLocations.some(selected =>
+                u.location.toLowerCase().includes(selected.split(',')[0].toLowerCase())
+            ));
 
         const matchesExperience = selectedExperience.length === 0 ||
             (u.experience && selectedExperience.includes(u.experience));

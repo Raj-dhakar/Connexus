@@ -14,29 +14,37 @@ const usePosts = () => {
     const fetchPosts = async (currentPage) => {
         try {
             setLoading(true);
-            const size = 5; // Default page size for infinite scroll
+            const size = 10; // Default page size for infinite scroll
 
             // Call API with pagination parameters
             const response = await postApi.getAllPosts({ page: currentPage, size, paginated: true });
             console.log(`Fetching page ${currentPage}:`, response);
+            console.log(`Response data:`, response.data + " \n" + response.data.content);
 
             let newPosts = [];
             // Handle pagination wrapper from backend
-            if (response.data && response.data.content) {
+            // Structure seems to be response.data (Axios) -> data (Wrapper) -> content (Page)
+            if (response.data && response.data.data && Array.isArray(response.data.data.content)) {
+                console.log("Parsing nested paginated response");
+                newPosts = response.data.data.content;
+                setHasMore(!response.data.data.last);
+            } else if (response.data && response.data.content) {
+                // Direct Page object
+                console.log("Parsing direct paginated response");
                 newPosts = response.data.content;
-                // If current page is last, no more posts
                 setHasMore(!response.data.last);
             } else if (Array.isArray(response.data)) {
-                // Fallback for non-paginated response
+                // Fallback for list
                 newPosts = response.data;
                 setHasMore(false);
             } else if (response.data && Array.isArray(response.data.data)) {
-                // Fallback for wrapped list response
+                // Fallback for wrapped list logic (if any)
                 newPosts = response.data.data;
                 setHasMore(false);
             }
 
             if (newPosts.length === 0) {
+                console.warn("API returned 0 posts.");
                 if (currentPage === 0) setPosts([]);
                 setLoading(false);
                 return;
@@ -76,11 +84,14 @@ const usePosts = () => {
                 };
             });
 
+            console.log(`Raw posts fetched: ${newPosts.length}`);
+
             const filteredPosts = mappedPosts.filter(post => {
                 const currentUserId = user?.user_id || user?.id;
-                // Strict comparison
+                // Strict comparison - Filter out own posts
                 return !(currentUserId && post.userId && String(currentUserId) === String(post.userId));
             });
+            console.log(`Posts after filtering: ${filteredPosts.length}`);
 
             setPosts(prev => currentPage === 0 ? filteredPosts : [...prev, ...filteredPosts]);
         } catch (err) {
