@@ -8,5 +8,4 @@ public class RecruiterDto {
     private String companyName;
     private String companySize;
     private String industry;
-    private UserDto user;
 }

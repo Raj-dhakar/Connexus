@@ -41,13 +41,17 @@ public class AuthService {
         User user = modelMapper.map(dto, User.class);
         user.setPassword(PasswordUtil.hashPassword(dto.getPassword()));
         user.setUserRole(UserRole.ROLE_RECRUITER);
-        User savedUser = userRepository.save(user);
-
+        
+        
         // Create Recruiter Profile
         Recruiter recruiter = new Recruiter();
         recruiter.setCompanyName(dto.getCompanyName());
-        recruiter.setUser(savedUser);
-        recruiterRepository.save(recruiter);
+        recruiter.setUser(user);
+        user.setRecruiter(recruiter); 
+        
+        User savedUser = userRepository.save(user);
+        log.info( "saved user : {}" + savedUser);
+        
         // Create person node 
         PersonDto personDto = PersonDto.builder()
         		.userId(savedUser.getId())

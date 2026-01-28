@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Getter
 @Builder
@@ -41,4 +43,8 @@ public class User extends BaseEntity{
     private String designation;
 
     private String profileImage;
+    
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Recruiter recruiter;
 }

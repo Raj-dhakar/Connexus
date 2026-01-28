@@ -28,7 +28,29 @@ public class UserController {
 
         return ResponseEntity.ok(userService.getUserProfile(userId));
     }
+    
+    @GetMapping("/self")
+    public ResponseEntity<UserDto> getUserById() {
 
+        return ResponseEntity.ok(userService.getUserById());
+    }
+    
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+    	  userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+    
+    @PutMapping("/{userId}")
+    public ResponseEntity<UserDto> updateUser(
+            @PathVariable Long userId,
+            @RequestBody UserDto userDto
+    ) {
+        return ResponseEntity.ok(
+                userService.updateUser(userId, userDto)
+        );
+    }
+    
     @PostMapping("/hash-passwords")
     public ResponseEntity<ApiResponse<String>> hashPasswordsOfAllUsers() {
         return ResponseEntity.ok(new ApiResponse(userService.hashPasswordsOfAllUsers()));
