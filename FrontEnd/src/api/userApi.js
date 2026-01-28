@@ -7,6 +7,9 @@ const userApi = {
     getAllUsers: () => {
         return axiosInstance.get('/users/all');
     },
+    updateUser: (userId, data) => {
+        return axiosInstance.put(`/users/${userId}`, data);
+    },
     // Add other user related calls here
 };
 

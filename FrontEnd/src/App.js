@@ -17,6 +17,8 @@ import { AnimatePresence } from 'framer-motion';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import useAuth, { AuthProvider } from './features/auth/useAuth';
+
 function App() {
   const location = useLocation();
 
@@ -24,20 +26,22 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path='/' element={<Signin />} />
-            <Route path='/signup' element={<Signup />} />
-            <Route path='/recruiter/signup' element={<RecruiterSignup />} />
-            <Route path='/main' element={<Main />} />
-            <Route path='/connect' element={<Connection />} />
-            <Route path="/invite" element={<Invitation />} />
-            <Route path="/network" element={<Network />} />
-            <Route path='/message' element={<Message />} />
-            <Route path='/recruiter/dashboard' element={<RecruiterDashboard />} />
-            <Route path='/test-profile' element={<TestProfile />} />
-          </Routes>
-        </AnimatePresence>
+        <AuthProvider>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path='/' element={<Signin />} />
+              <Route path='/signup' element={<Signup />} />
+              <Route path='/recruiter/signup' element={<RecruiterSignup />} />
+              <Route path='/main' element={<Main />} />
+              <Route path='/connect' element={<Connection />} />
+              <Route path="/invite" element={<Invitation />} />
+              <Route path="/network" element={<Network />} />
+              <Route path='/message' element={<Message />} />
+              <Route path='/recruiter/dashboard' element={<RecruiterDashboard />} />
+              <Route path='/test-profile' element={<TestProfile />} />
+            </Routes>
+          </AnimatePresence>
+        </AuthProvider>
       </Box>
       <ToastContainer position="top-right" autoClose={3000} />
     </ThemeProvider>

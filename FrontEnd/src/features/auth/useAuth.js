@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 
-const useAuth = () => {
+const AuthContext = createContext(null);
+
+export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -11,14 +13,22 @@ const useAuth = () => {
             const userStr = Cookies.get("user");
             const token = Cookies.get("token");
             if (userStr && token) {
-                setUser(JSON.parse(userStr));
+                try {
+                    setUser(JSON.parse(userStr));
+                } catch (e) {
+                    console.error("Failed to parse user cookie", e);
+                    setUser(null);
+                }
             } else {
-                // If token or user is missing, ensure we are logged out
-                setUser({
-                    username: "Guest User",
-                    designation: "Visitor",
-                    profile_image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                });
+                // Explicitly set null or Guest structure if needed, but null is safer for logic checks
+                // adhering to previous logic:
+                if (!user) { // Only set if not already set to avoid loops?
+                    setUser({
+                        username: "Guest User",
+                        designation: "Visitor",
+                        profile_image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                    });
+                }
             }
         };
 
@@ -31,7 +41,7 @@ const useAuth = () => {
         };
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
-        window.addEventListener("focus", checkUser); // Also check on window focus
+        window.addEventListener("focus", checkUser);
 
         return () => {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -40,18 +50,32 @@ const useAuth = () => {
     }, []);
 
     const login = (userData, token) => {
-        Cookies.set("user", JSON.stringify(userData));
-        Cookies.set("token", token);
+        Cookies.set("user", JSON.stringify(userData), { expires: 7 });
+        Cookies.set("token", token, { expires: 7 });
         setUser(userData);
     };
 
     const logout = () => {
         Cookies.remove("user");
         Cookies.remove("token");
+        setUser(null);
         navigate("/");
     };
 
-    return { user, login, logout };
+    const updateUser = (userData) => {
+        Cookies.set("user", JSON.stringify(userData), { expires: 7 });
+        setUser(userData);
+    };
+
+    return (
+        <AuthContext.Provider value={{ user, login, logout, updateUser }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
+
+const useAuth = () => {
+    return useContext(AuthContext);
 };
 
 export default useAuth;
