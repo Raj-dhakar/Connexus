@@ -52,31 +52,60 @@ const ProfileDialog = ({ open, onClose, user }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({});
+    const [displayUser, setDisplayUser] = useState(user); // State for the user being displayed, allowing updates from API
 
     // Initialize form data when user opens dialog
+    // Initialize data when user prop changes
     useEffect(() => {
         if (user) {
-            setFormData({
-                firstName: user.firstName || '',
-                lastName: user.lastName || '',
-                designation: user.designation || '',
-                about: user.about || '',
-                location: user.location || '',
-                website: user.website || '',
-                phone: user.phone || '',
-                skills: user.skills || [],
-                expType: user.expType || 'JUNIOR'
-            });
-            setIsEditing(false);
+            setDisplayUser(user);
+            // Fetch full profile if not complete or just to be safe for other users
+            // Using a simple check: if we are viewing another user, let's fetch their latest data.
+            // Or always fetch to ensure we have details like 'about', 'skills', etc. which might be missing in 'user' prop from feed.
+            const fetchFullProfile = async () => {
+                if (renderUser.id) {
+                    try {
+                        const response = await userApi.getProfile(renderUser.id);
+                        if (response.data && response.data.data) {
+                            setDisplayUser(response.data.data);
+                        } else if (response.data) {
+                            setDisplayUser(response.data);
+                        }
+                    } catch (err) {
+                        console.error("Failed to fetch full profile", err);
+                    }
+                }
+            };
+
+            // Trigger fetch
+            fetchFullProfile();
         }
     }, [user, open]);
+
+    // Update formData when displayUser changes (so edit mode has correct data if enabled)
+    useEffect(() => {
+        if (displayUser) {
+            setFormData({
+                firstName: displayUser.firstName || '',
+                lastName: displayUser.lastName || '',
+                designation: displayUser.designation || '',
+                about: displayUser.about || '',
+                location: displayUser.location || '',
+                website: displayUser.website || '',
+                phone: displayUser.phone || '',
+                skills: displayUser.skills || [],
+                expType: displayUser.expType || 'JUNIOR',
+                email: displayUser.email
+            });
+        }
+    }, [displayUser]);
 
     useEffect(() => {
 
         const fetchUserPosts = async () => {
-            if (user && user.id) {
+            if (user && renderUser.id) {
                 try {
-                    const response = await postApi.getPostsByUser(user.id);
+                    const response = await postApi.getPostsByUser(renderUser.id);
                     if (response.data && Array.isArray(response.data.data)) {
                         setUserPosts(response.data.data);
                     } else if (Array.isArray(response.data)) {
@@ -96,16 +125,13 @@ const ProfileDialog = ({ open, onClose, user }) => {
 
     if (!user) return null;
 
-    console.log("CurrentUser:", currentUser);
-    console.log("ProfileUser:", user);
-
-    // Debugging IDs
     const currentUserId = currentUser?.id || currentUser?.user_id || currentUser?.userId;
     const profileUserId = user?.id || user?.user_id || user?.userId;
 
-    console.log(`Comparing Current(${currentUserId}) vs Profile(${profileUserId})`);
-
     const isOwnProfile = currentUser && String(currentUserId) === String(profileUserId);
+
+    // Use displayUser for rendering instead of user prop
+    const renderUser = displayUser || user;
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -135,11 +161,11 @@ const ProfileDialog = ({ open, onClose, user }) => {
                 ...user,
                 ...formData,
                 // Ensure ID is present
-                id: user.id
+                id: renderUser.id
             };
             console.log(updatedUser);
-            console.log(user.id);
-            await userApi.updateUser(user.id, updatedUser);
+            console.log(renderUser.id);
+            await userApi.updateUser(renderUser.id, updatedUser);
             // Update local auth context if it's the own profile
             if (isOwnProfile) {
                 updateUser(updatedUser);
@@ -184,16 +210,16 @@ const ProfileDialog = ({ open, onClose, user }) => {
         if (!isEditing) {
             // Entering edit mode: ensure formData is fresh
             setFormData({
-                firstName: user.firstName || '',
-                lastName: user.lastName || '',
-                designation: user.designation || '',
-                about: user.about || '',
-                location: user.location || '',
-                website: user.website || '',
-                phone: user.phone || '',
-                skills: user.skills || [],
-                expType: user.expType || 'JUNIOR',
-                email: user.email // keep email in form just in case, though maybe read only
+                firstName: renderUser.firstName || '',
+                lastName: renderUser.lastName || '',
+                designation: renderUser.designation || '',
+                about: renderUser.about || '',
+                location: renderUser.location || '',
+                website: renderUser.website || '',
+                phone: renderUser.phone || '',
+                skills: renderUser.skills || [],
+                expType: renderUser.expType || 'JUNIOR',
+                email: renderUser.email // keep email in form just in case, though maybe read only
             });
         }
     };
@@ -255,7 +281,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                         <Grid item xs={12} md={4} lg={3}>
                             <Box sx={{ position: 'relative', top: -80, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <Avatar
-                                    src={user.profileImage}
+                                    src={renderUser.profileImage}
                                     sx={{ width: 160, height: 160, border: '6px solid white', boxShadow: theme.shadows[3], bgcolor: 'white' }}
                                 />
 
@@ -290,7 +316,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                     ) : (
                                         <>
                                             <Typography variant="h4" fontWeight="800" gutterBottom>
-                                                {user.firstName} {user.lastName}
+                                                {renderUser.firstName} {renderUser.lastName}
                                                 {isOwnProfile && !isEditing && (
                                                     <IconButton size="small" onClick={handleEditToggle} sx={{ ml: 1 }}>
                                                         <EditIcon fontSize="small" />
@@ -298,9 +324,9 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                                 )}
                                             </Typography>
                                             <Typography variant="h6" color="text.secondary" gutterBottom>
-                                                @{user.username}
+                                                @{renderUser.username}
                                             </Typography>
-                                            <Chip label={user.designation || 'Member'} color="primary" variant="filled" sx={{ fontWeight: 'bold', px: 2, py: 2.5, borderRadius: 2, mt: 1 }} />
+                                            <Chip label={renderUser.designation || 'Member'} color="primary" variant="filled" sx={{ fontWeight: 'bold', px: 2, py: 2.5, borderRadius: 2, mt: 1 }} />
                                         </>
                                     )}
                                 </Box>
@@ -345,30 +371,30 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                             </>
                                         ) : (
                                             <>
-                                                {user.dob && (
+                                                {renderUser.dob && (
                                                     <Stack direction="row" spacing={1.5} alignItems="center">
                                                         <CakeIcon color="action" fontSize="small" />
-                                                        <Typography variant="body2">Born {user.dob}</Typography>
+                                                        <Typography variant="body2">Born {renderUser.dob}</Typography>
                                                     </Stack>
                                                 )}
-                                                {user.location && (
+                                                {renderUser.location && (
                                                     <Stack direction="row" spacing={1.5} alignItems="center">
                                                         <PlaceIcon color="action" fontSize="small" />
-                                                        <Typography variant="body2">{user.location}</Typography>
+                                                        <Typography variant="body2">{renderUser.location}</Typography>
                                                     </Stack>
                                                 )}
-                                                {user.website && (
+                                                {renderUser.website && (
                                                     <Stack direction="row" spacing={1.5} alignItems="center">
                                                         <LanguageIcon color="action" fontSize="small" />
-                                                        <Typography variant="body2" component="a" href={user.website} target="_blank" sx={{ color: 'primary.main', textDecoration: 'none' }}>
-                                                            {user.website}
+                                                        <Typography variant="body2" component="a" href={renderUser.website} target="_blank" sx={{ color: 'primary.main', textDecoration: 'none' }}>
+                                                            {renderUser.website}
                                                         </Typography>
                                                     </Stack>
                                                 )}
-                                                {user.expType && (
+                                                {renderUser.expType && (
                                                     <Stack direction="row" spacing={1.5} alignItems="center">
                                                         <WorkIcon color="action" fontSize="small" />
-                                                        <Typography variant="body2">{user.expType}</Typography>
+                                                        <Typography variant="body2">{renderUser.expType}</Typography>
                                                     </Stack>
                                                 )}
                                             </>
@@ -399,7 +425,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                         />
                                     ) : (
                                         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-                                            {user.about || 'No about information available.'}
+                                            {renderUser.about || 'No about information available.'}
                                         </Typography>
                                     )}
                                 </Paper>
@@ -417,7 +443,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                                     <EmailIcon color="primary" />
                                                     <Typography variant="caption" color="text.secondary">Email Address</Typography>
                                                 </Stack>
-                                                <Typography variant="body1" fontWeight="medium">{user.email}</Typography>
+                                                <Typography variant="body1" fontWeight="medium">{renderUser.email}</Typography>
                                             </Stack>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -436,7 +462,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                                         placeholder="+1 234 567 890"
                                                     />
                                                 ) : (
-                                                    <Typography variant="body1" fontWeight="medium">{user.phone || 'N/A'}</Typography>
+                                                    <Typography variant="body1" fontWeight="medium">{renderUser.phone || 'N/A'}</Typography>
                                                 )}
                                             </Stack>
                                         </Grid>
@@ -457,8 +483,8 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                         />
                                     ) : (
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                            {user.skills && user.skills.length > 0 ? (
-                                                user.skills.map((skill, index) => (
+                                            {renderUser.skills && renderUser.skills.length > 0 ? (
+                                                renderUser.skills.map((skill, index) => (
                                                     <Chip key={index} label={skill} color="primary" variant="outlined" sx={{ borderRadius: 2 }} />
                                                 ))
                                             ) : (
