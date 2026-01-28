@@ -1,42 +1,115 @@
 import { useState, useEffect } from 'react';
-import steve from "../../images/steve.jpg" // Note: image path might need adjustment or moving to assets
+import postApi from '../../api/postApi';
+import userApi from '../../api/userApi';
+import useAuth from '../auth/useAuth';
 
 const usePosts = () => {
-    // In the future, this will use postApi to fetch data
     const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const { user } = useAuth(); // Get current user to filter
 
-    useEffect(() => {
-        // Mock data loading
-        setPosts([
-            {
-                id: 1,
-                username: "Elon Musk",
-                designation: "CEO of Tesla",
-                profile_image: "https://upload.wikimedia.org/wikipedia/commons/3/34/Elon_Musk_Royal_Society_%28crop2%29.jpg",
-                textPost: "Just launched another rocket! Space exploration is the future.",
-                filePost: "https://images.unsplash.com/photo-1516849841032-87cbac4d88f7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80"
-            },
-            {
-                id: 2,
-                username: "Bill Gates",
-                designation: "Co-founder of Microsoft",
-                profile_image: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Bill_Gates_2017_%28cropped%29.jpg",
-                textPost: "Working on solving climate change challenges.",
-                filePost: null
-            },
-            {
-                id: 3,
-                username: "Steve Jobs",
-                designation: "Co-founder of Apple",
-                // profile_image: steve, // TODO: Fix image path handling
-                profile_image: "https://upload.wikimedia.org/wikipedia/commons/f/f5/Steve_Jobs_Headshot_2010-CROP.jpg",
-                textPost: "Stay hungry, stay foolish.",
-                filePost: "https://images.unsplash.com/photo-1556656793-02715d8dd6f8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2687&q=80"
+    const fetchPosts = async (currentPage) => {
+        try {
+            setLoading(true);
+            const size = 5; // Default page size for infinite scroll
+
+            // Call API with pagination parameters
+            const response = await postApi.getAllPosts({ page: currentPage, size, paginated: true });
+            console.log(`Fetching page ${currentPage}:`, response);
+
+            let newPosts = [];
+            // Handle pagination wrapper from backend
+            if (response.data && response.data.content) {
+                newPosts = response.data.content;
+                // If current page is last, no more posts
+                setHasMore(!response.data.last);
+            } else if (Array.isArray(response.data)) {
+                // Fallback for non-paginated response
+                newPosts = response.data;
+                setHasMore(false);
+            } else if (response.data && Array.isArray(response.data.data)) {
+                // Fallback for wrapped list response
+                newPosts = response.data.data;
+                setHasMore(false);
             }
-        ]);
-    }, []);
 
-    return { posts };
+            if (newPosts.length === 0) {
+                if (currentPage === 0) setPosts([]);
+                setLoading(false);
+                return;
+            }
+
+            // Enrich posts with user data
+            const userIds = [...new Set(newPosts.map(p => p.userId).filter(id => id))];
+            const userPromises = userIds.map(id =>
+                userApi.getProfile(id).catch(err => {
+                    return null; // Return null on error
+                })
+            );
+
+            const usersResponses = await Promise.all(userPromises);
+
+            const usersMap = {};
+            usersResponses.forEach(res => {
+                if (res && res.data && res.data.data) {
+                    const u = res.data.data;
+                    usersMap[u.id] = u;
+                } else if (res && res.data) {
+                    const u = res.data;
+                    usersMap[u.id] = u;
+                }
+            });
+
+            const mappedPosts = newPosts.map(post => {
+                const author = usersMap[post.userId] || {};
+                return {
+                    id: post.postId,
+                    userId: post.userId,
+                    username: author.username || author.firstName || `User ${post.userId}`,
+                    designation: author.designation || 'Member',
+                    profile_image: author.profileImage,
+                    textPost: post.description || post.title,
+                    filePost: null
+                };
+            });
+
+            const filteredPosts = mappedPosts.filter(post => {
+                const currentUserId = user?.user_id || user?.id;
+                // Strict comparison
+                return !(currentUserId && post.userId && String(currentUserId) === String(post.userId));
+            });
+
+            setPosts(prev => currentPage === 0 ? filteredPosts : [...prev, ...filteredPosts]);
+        } catch (err) {
+            console.error("Failed to fetch posts:", err);
+            setError(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Initial load
+    useEffect(() => {
+        if (user) {
+            setPage(0);
+            setHasMore(true);
+            fetchPosts(0);
+        }
+    }, [user]);
+
+    // Load more function
+    const loadMore = () => {
+        if (!loading && hasMore) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            fetchPosts(nextPage);
+        }
+    };
+
+    return { posts, loading, error, hasMore, loadMore };
 };
 
 export default usePosts;

@@ -1,0 +1,78 @@
+INSERT INTO posts (created_on, last_updated, title, description, user_id) VALUES
+-- Admin posts
+('2026-01-20', '2026-01-27 10:15:00.000000', 
+ 'Platform Maintenance Update',
+ 'Scheduled maintenance will occur this weekend to improve performance and security.',
+ 1),
+
+('2026-01-21', '2026-01-27 11:00:00.000000',
+ 'New Features Released',
+ 'We have rolled out new dashboard features for recruiters and users.',
+ 2),
+
+-- Recruiter posts
+('2026-01-22', '2026-01-27 12:30:00.000000',
+ 'Hiring Java Developers',
+ 'Infosys is hiring Java developers with Spring Boot and Microservices experience.',
+ 3),
+
+('2026-01-22', '2026-01-27 13:10:00.000000',
+ 'Open Positions at TCS',
+ 'Looking for frontend developers skilled in React.js and modern UI frameworks.',
+ 4),
+
+('2026-01-23', '2026-01-27 14:00:00.000000',
+ 'Wipro Recruitment Drive',
+ 'We are hiring freshers and experienced professionals for multiple tech roles.',
+ 5),
+
+('2026-01-24', '2026-01-27 15:20:00.000000',
+ 'Startup Hiring Alert',
+ 'Join our fast-growing startup and work on scalable cloud-based products.',
+ 6),
+
+-- User posts
+('2026-01-24', '2026-01-27 16:00:00.000000',
+ 'Looking for Java Backend Role',
+ 'I have experience in Spring Boot, JWT authentication, and REST APIs.',
+ 7),
+
+('2026-01-25', '2026-01-27 16:45:00.000000',
+ 'React Developer Open to Work',
+ 'Frontend developer with strong experience in React, Redux, and UI optimization.',
+ 8),
+
+('2026-01-25', '2026-01-27 17:10:00.000000',
+ 'Learning Microservices',
+ 'Currently learning Kafka, Docker, and microservices architecture.',
+ 9),
+
+('2026-01-26', '2026-01-27 17:40:00.000000',
+ 'Interview Preparation Tips',
+ 'Sharing my experience preparing for Java and system design interviews.',
+ 10),
+
+('2026-01-26', '2026-01-27 18:05:00.000000',
+ 'Open to Internship Opportunities',
+ 'Final-year student looking for backend or full-stack internship roles.',
+ 11),
+
+('2026-01-27', '2026-01-27 18:30:00.000000',
+ 'Career Switch to Tech',
+ 'Transitioning from non-tech background to full-stack development.',
+ 12),
+
+('2026-01-27', '2026-01-27 19:00:00.000000',
+ 'Completed Spring Security Project',
+ 'Built JWT-based authentication with role-based access control.',
+ 21),
+
+('2026-01-28', '2026-01-28 09:15:00.000000',
+ 'Recruiter Account Setup',
+ 'Excited to start posting job openings and connecting with candidates.',
+ 23),
+
+('2026-01-28', '2026-01-28 11:30:00.000000',
+ 'Exploring Job Opportunities',
+ 'Actively looking for opportunities in backend development.',
+ 25);

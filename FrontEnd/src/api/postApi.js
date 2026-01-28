@@ -1,8 +1,8 @@
 import axiosInstance from './axiosInstance';
 
 const postApi = {
-    getAllPosts: () => {
-        return axiosInstance.get('/posts');
+    getAllPosts: (params) => {
+        return axiosInstance.get('/posts', { params });
     },
     createPost: (postData) => {
         return axiosInstance.post('/posts', postData);
