@@ -18,6 +18,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @Service
 @RequiredArgsConstructor
@@ -50,8 +54,8 @@ public class PostService {
     public PostDto getPostById(Long postId) {
         log.debug("Retrieving post with ID: {}", postId);
 
-        Post post = postRepository.findById(postId).orElseThrow(() ->
-                new ResourceNotFoundException("Post not found with id: "+postId));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
         return modelMapper.map(post, PostDto.class);
     }
 
@@ -64,12 +68,19 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-	public List<PostDto> getAllPost() {
-		List<Post> posts = postRepository.findAll();
+    public Page<PostDto> getAllPost(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdOn").descending());
+        Page<Post> posts = postRepository.findAll(pageable);
+
+        return posts.map(element -> modelMapper.map(element, PostDto.class));
+    }
+
+    public List<PostDto> getAllPost() {
+        List<Post> posts = postRepository.findAll();
 
         return posts
                 .stream()
                 .map((element) -> modelMapper.map(element, PostDto.class))
                 .collect(Collectors.toList());
-	}
+    }
 }

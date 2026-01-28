@@ -27,6 +27,9 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
 
+import ProfileDialog from '../profile/components/ProfileDialog'; // Import ProfileDialog
+import { Person as PersonIcon } from '@mui/icons-material'; // Import PersonIcon
+
 function Navbar({ userData }) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -34,6 +37,7 @@ function Navbar({ userData }) {
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const [anchorElUser, setAnchorElUser] = useState(null);
+    const [profileOpen, setProfileOpen] = useState(false); // State for ProfileDialog
 
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);
@@ -41,6 +45,11 @@ function Navbar({ userData }) {
 
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
+    };
+
+    const handleProfileClick = () => {
+        handleCloseUserMenu();
+        setProfileOpen(true);
     };
 
     const logout = () => {
@@ -178,12 +187,23 @@ function Navbar({ userData }) {
                             <Typography textAlign="center" sx={{ color: 'text.primary' }}>{item.label}</Typography>
                         </MenuItem>
                     ))}
+                    <MenuItem onClick={handleProfileClick}>
+                        <PersonIcon sx={{ mr: 1, fontSize: 20, color: theme.palette.text.primary }} />
+                        <Typography textAlign="center" sx={{ color: 'text.primary' }}>Profile</Typography>
+                    </MenuItem>
                     <MenuItem onClick={logout}>
                         <LogoutIcon sx={{ mr: 1, fontSize: 20, color: theme.palette.error.main }} />
                         <Typography textAlign="center" color="error">Logout</Typography>
                     </MenuItem>
                 </Menu>
             </Paper>
+
+            {/* Profile Dialog */}
+            <ProfileDialog
+                open={profileOpen}
+                onClose={() => setProfileOpen(false)}
+                user={userData}
+            />
         </Box>
     );
 }
