@@ -1,6 +1,5 @@
 package com.connexus.connect.controller;
 
-
 import com.connexus.connect.entity.Person;
 import com.connexus.connect.service.ConnectionsService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +18,11 @@ public class ConnectionsController {
     @GetMapping("/first-degree")
     public ResponseEntity<List<Person>> getFirstConnections() {
         return ResponseEntity.ok(connectionsService.getFirstDegreeConnections());
+    }
+
+    @GetMapping("/requested")
+    public ResponseEntity<List<Person>> getIncomingRequests() {
+        return ResponseEntity.ok(connectionsService.getIncomingConnectionRequests());
     }
 
     @PostMapping("/request/{userId}")

@@ -1,6 +1,5 @@
 package com.connexus.connect.service;
 
-
 import com.connexus.connect.auth.UserContextHolder;
 import com.connexus.connect.entity.Person;
 import com.connexus.connect.event.AcceptConnectionRequestEvent;
@@ -23,12 +22,18 @@ public class ConnectionsService {
     private final KafkaTemplate<Long, SendConnectionRequestEvent> sendRequestKafkaTemplate;
     private final KafkaTemplate<Long, AcceptConnectionRequestEvent> acceptRequestKafkaTemplate;
 
-
     public List<Person> getFirstDegreeConnections() {
         Long userId = UserContextHolder.getCurrentUserId();
         log.info("Getting first degree connections for user with id: {}", userId);
 
         return personRepository.getFirstDegreeConnections(userId);
+    }
+
+    public List<Person> getIncomingConnectionRequests() {
+        Long userId = UserContextHolder.getCurrentUserId();
+        log.info("Getting incoming connection requests for user with id: {}", userId);
+
+        return personRepository.getIncomingConnectionRequests(userId);
     }
 
     public Boolean sendConnectionRequest(Long receiverId) {
@@ -38,10 +43,10 @@ public class ConnectionsService {
         log.info("Trying to send connection request, sender: {}, reciever: {}", senderId, receiverId);
 
         String receiverRole = personRepository.getRoleByUserId(receiverId);
-        
-        validateConnectionRequestByRole(receiverRole,senderRole);
-        
-        if(senderId.equals(receiverId)) {
+
+        validateConnectionRequestByRole(receiverRole, senderRole);
+
+        if (senderId.equals(receiverId)) {
             throw new RuntimeException("Both sender and receiver are the same");
         }
 
@@ -51,13 +56,13 @@ public class ConnectionsService {
         }
 
         boolean alreadyConnected = personRepository.alreadyConnected(senderId, receiverId);
-        if(alreadyConnected) {
+        if (alreadyConnected) {
             throw new RuntimeException("Already connected users, cannot add connection request");
         }
 
         log.info("Successfully sent the connection request");
         personRepository.addConnectionRequest(senderId, receiverId);
-        
+
         // Send connection request notification
         SendConnectionRequestEvent sendConnectionRequestEvent = SendConnectionRequestEvent.builder()
                 .senderId(senderId)
@@ -69,24 +74,21 @@ public class ConnectionsService {
         return true;
     }
 
-
     private void validateConnectionRequestByRole(String receiverRole, String senderRole) {
-    	log.info( "Sender role : {}" + senderRole);
-    	log.info( "Receiver role : {}" + receiverRole);
-    	if ("ROLE_USER".equals(senderRole) && "ROLE_RECRUITER".equals(receiverRole)) {
+        log.info("Sender role : {}" + senderRole);
+        log.info("Receiver role : {}" + receiverRole);
+        if ("ROLE_USER".equals(senderRole) && "ROLE_RECRUITER".equals(receiverRole)) {
             throw new AccessDeniedException(
-                "Users cannot send connection request to recruiters"
-            );
+                    "Users cannot send connection request to recruiters");
         }
 
         if ("ROLE_RECRUITER".equals(senderRole) && "ROLE_RECRUITER".equals(receiverRole)) {
             throw new AccessDeniedException(
-                "Recruiters cannot connect with recruiters"
-            );
+                    "Recruiters cannot connect with recruiters");
         }
-	}
+    }
 
-	public Boolean acceptConnectionRequest(Long senderId) {
+    public Boolean acceptConnectionRequest(Long senderId) {
         Long receiverId = UserContextHolder.getCurrentUserId();
 
         boolean connectionRequestExists = personRepository.connectionRequestExists(senderId, receiverId);
@@ -96,7 +98,7 @@ public class ConnectionsService {
 
         personRepository.acceptConnectionRequest(senderId, receiverId);
         log.info("Successfully accepted the connection request, sender: {}, receiver: {}", senderId, receiverId);
-        
+
         // accept connection request notification
 
         AcceptConnectionRequestEvent acceptConnectionRequestEvent = AcceptConnectionRequestEvent.builder()

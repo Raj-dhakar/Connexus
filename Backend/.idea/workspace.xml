@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="22073f7d-dbeb-4a6a-aade-6ff1c245d893" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/profile/components/ProfileDialog.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/profile/components/ProfileDialog.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -200,7 +199,7 @@
       <option name="presentableId" value="Default" />
       <updated>1769622351765</updated>
       <workItem from="1769622358005" duration="1031000" />
-      <workItem from="1769624080591" duration="4155000" />
+      <workItem from="1769624080591" duration="5606000" />
     </task>
     <servers />
   </component>
