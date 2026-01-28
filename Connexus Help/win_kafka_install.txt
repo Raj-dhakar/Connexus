@@ -1,0 +1,22 @@
+Run command to generate UUID
+kafka-storage.bat random-uuid
+
+Run the formatting command:
+kafka-storage.bat format -t <UUID> -c C:\kafka\config\kraft\server.properties
+ kafka-storage.bat format -t 9hsPQ8iuT6atepaj1iBgiA -c C:\kafka\config\kraft\server.properties
+
+Start the Kafka Server using below Command
+kafka-server-start.bat C:\kafka\config\kraft\server.properties
+
+Open new CMD keep Kafka server cmd running.
+kafka-topics.bat --create --topic test --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+In the new CMD which is open run below command
+Producer (send messages):
+kafka-console-producer.bat --topic test --bootstrap-server localhost:9092
+
+Open another New CMD: Run below
+kafka-console-consumer.bat --topic test --from-beginning --bootstrap-server localhost:9092
+
+
+ java -Dspring.config.additional-location=application-local.yml -jar api-v1.4.2.jar

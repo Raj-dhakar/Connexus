@@ -1,0 +1,81 @@
+CREATE (:Person {userId: 1, name: 'Pranav Patil'});
+CREATE (:Person {userId: 2, name: 'Neha Verma'});
+CREATE (:Person {userId: 3, name: 'Rohit Mehra'});
+CREATE (:Person {userId: 4, name: 'Pooja Iyer'});
+CREATE (:Person {userId: 5, name: 'Suresh Nair'});
+CREATE (:Person {userId: 7, name: 'Raj Dhakar'});
+CREATE (:Person {userId: 8, name: 'Priya Patel'});
+CREATE (:Person {userId: 9, name: 'Kunal Joshi'});
+CREATE (:Person {userId: 10, name: 'Sneha Reddy'});
+CREATE (:Person {userId: 11, name: 'Arjun Kapoor'});
+CREATE (:Person {userId: 12, name: 'Divya Malhotra'});
+
+// Raj (7) connections
+MATCH (a:Person {userId: 7}), (b:Person {userId: 3})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 7}), (b:Person {userId: 5})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+// Priya (8) connections
+MATCH (a:Person {userId: 8}), (b:Person {userId: 9})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 8}), (b:Person {userId: 1})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+// Rohit (3) connections
+MATCH (a:Person {userId: 3}), (b:Person {userId: 4})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 3}), (b:Person {userId: 2})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+// Admins connected
+MATCH (a:Person {userId: 1}), (b:Person {userId: 2})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+// Recruiter network
+MATCH (a:Person {userId: 4}), (b:Person {userId: 5})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 5}), (b:Person {userId: 6})
+CREATE (a)-[:CONNECTED_TO]->(b);
+
+
+
+MATCH (a:Person {userId: 1}), (b:Person {userId: 3})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 1}), (b:Person {userId: 4})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 2}), (b:Person {userId: 3})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 2}), (b:Person {userId: 5})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+
+//
+MATCH (a:Person {userId: 3}), (b:Person {userId: 6})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 4}), (b:Person {userId: 7})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 5}), (b:Person {userId: 8})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+
+
+🔵 Extend further → enables 3rd degree
+MATCH (a:Person {userId: 6}), (b:Person {userId: 9})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 7}), (b:Person {userId: 10})
+MERGE (a)-[:CONNECTED_TO]->(b);
+
+MATCH (a:Person {userId: 8}), (b:Person {userId: 11})
+MERGE (a)-[:CONNECTED_TO]->(b);
+

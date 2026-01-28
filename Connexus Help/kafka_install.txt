@@ -1,0 +1,17 @@
+java -Dspring.config.additional-location=application-local.yml --add-opens java.rmi/javax.rmi.ssl=ALL-UNNAMED -jar api-v1.4.2.jar
+
+
+
+application-local.yml
+
+logging:
+  level:
+    root: INFO
+    io.kafbat.ui: DEBUG
+spring:
+  jmx:
+    enabled: true
+kafka:
+  clusters:
+    - name: local
+      bootstrapServers: localhost:9092

@@ -16,19 +16,23 @@ import {
     IconButton,
     Tooltip,
     CircularProgress,
-    TablePagination
+    TablePagination,
+    Autocomplete,
+    TextField
 } from '@mui/material';
 import {
     Visibility as VisibilityIcon,
     Email as EmailIcon,
     Work as WorkIcon,
     TrendingUp as TrendingUpIcon,
-    People as PeopleIcon
+    People as PeopleIcon,
+    Search as SearchIcon
 } from '@mui/icons-material';
 import userApi from '../../api/userApi';
 import useAuth from '../auth/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 
 function RecruiterDashboard() {
     const [users, setUsers] = useState([]);
@@ -44,9 +48,59 @@ function RecruiterDashboard() {
     const [selectedLocations, setSelectedLocations] = useState([]);
     const [selectedExperience, setSelectedExperience] = useState([]);
 
-    const SKILLS = ["React", "Node.js", "Python", "Java", "AWS", "Docker", "Figma", "TypeScript"];
-    const LOCATIONS = ["Remote", "New York", "London", "San Francisco", "Berlin", "Bangalore"];
+    const [skillOptions, setSkillOptions] = useState([]);
+    const [locationOptions, setLocationOptions] = useState([]);
+    const [skillInput, setSkillInput] = useState("");
+    const [locationInput, setLocationInput] = useState("");
+
     const EXPERIENCES = ["Junior", "Mid-Level", "Senior", "Lead", "Manager"];
+
+    // Debounce utility
+    const useDebounce = (value, delay) => {
+        const [debouncedValue, setDebouncedValue] = useState(value);
+        useEffect(() => {
+            const handler = setTimeout(() => {
+                setDebouncedValue(value);
+            }, delay);
+            return () => {
+                clearTimeout(handler);
+            };
+        }, [value, delay]);
+        return debouncedValue;
+    };
+
+    const debouncedSkillInput = useDebounce(skillInput, 500);
+    const debouncedLocationInput = useDebounce(locationInput, 500);
+
+    useEffect(() => {
+        const fetchSkills = async () => {
+            if (!debouncedSkillInput) return;
+            try {
+                const response = await axios.get(`https://api.stackexchange.com/2.3/tags?order=desc&sort=popular&site=stackoverflow&inname=${debouncedSkillInput}`);
+                if (response.data && response.data.items) {
+                    setSkillOptions(response.data.items.map(item => item.name));
+                }
+            } catch (error) {
+                console.error("Error fetching skills:", error);
+            }
+        };
+        fetchSkills();
+    }, [debouncedSkillInput]);
+
+    useEffect(() => {
+        const fetchLocations = async () => {
+            if (!debouncedLocationInput) return;
+            try {
+                const response = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${debouncedLocationInput}`);
+                if (response.data) {
+                    setLocationOptions(response.data.map(item => item.display_name));
+                }
+            } catch (error) {
+                console.error("Error fetching locations:", error);
+            }
+        };
+        fetchLocations();
+    }, [debouncedLocationInput]);
 
     useEffect(() => {
 
@@ -54,7 +108,15 @@ function RecruiterDashboard() {
             try {
                 const response = await userApi.getAllUsers();
                 if (response.data && response.data.data) {
-                    const candidates = response.data.data.filter(u => u.role !== "RECRUITER");
+                    const candidates = response.data.data
+                        .filter(u => u.role !== "RECRUITER")
+                        .map(u => ({
+                            ...u,
+                            // Inject dummy data for demo purposes
+                            skills: ["React", "Node.js", "Java"].sort(() => 0.5 - Math.random()).slice(0, 2),
+                            location: ["New York", "London", "Remote"][Math.floor(Math.random() * 3)],
+                            experience: ["Junior", "Senior"][Math.floor(Math.random() * 2)]
+                        }));
                     setUsers(candidates);
                 }
             } catch (error) {
@@ -90,10 +152,16 @@ function RecruiterDashboard() {
             (u.firstName && u.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (u.lastName && u.lastName.toLowerCase().includes(searchQuery.toLowerCase()));
 
-        // Note: Actual filtering by skills/location/experience would happen here 
-        // once backend provides those fields. For now, we just track the UI selection.
+        const matchesSkills = selectedSkills.length === 0 ||
+            selectedSkills.some(skill => u.skills && u.skills.includes(skill));
 
-        return matchesSearch;
+        const matchesLocation = selectedLocations.length === 0 ||
+            (u.location && selectedLocations.some(loc => u.location.includes(loc.split(',')[0]))); // Simple match
+
+        const matchesExperience = selectedExperience.length === 0 ||
+            (u.experience && selectedExperience.includes(u.experience));
+
+        return matchesSearch && matchesSkills && matchesLocation && matchesExperience;
     });
 
     if (loading) {
@@ -169,7 +237,7 @@ function RecruiterDashboard() {
                         <Grid item xs={12}>
                             <Box sx={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', px: 2, border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <IconButton disabled>
-                                    <VisibilityIcon sx={{ color: 'text.secondary' }} /> {/* Using Visibility as search icon for now, or just leave generic */}
+                                    <SearchIcon sx={{ color: 'text.secondary' }} />
                                 </IconButton>
                                 <input
                                     type="text"
@@ -195,41 +263,79 @@ function RecruiterDashboard() {
                                 {/* Skills */}
                                 <Grid item xs={12} md={4}>
                                     <Typography variant="subtitle2" color="text.secondary" mb={2}>SKILLS</Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                        {SKILLS.map(skill => (
-                                            <Chip
-                                                key={skill}
-                                                label={skill}
-                                                onClick={() => toggleFilter(skill, selectedSkills, setSelectedSkills)}
+                                    <Autocomplete
+                                        multiple
+                                        options={skillOptions}
+                                        value={selectedSkills}
+                                        onChange={(event, newValue) => setSelectedSkills(newValue)}
+                                        onInputChange={(event, newInputValue) => setSkillInput(newInputValue)}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                placeholder="Select Skills"
+                                                variant="outlined"
                                                 sx={{
-                                                    backgroundColor: selectedSkills.includes(skill) ? '#00f2fe' : 'rgba(255,255,255,0.05)',
-                                                    color: selectedSkills.includes(skill) ? '#000' : 'text.secondary',
-                                                    border: selectedSkills.includes(skill) ? 'none' : '1px solid rgba(255,255,255,0.1)',
-                                                    '&:hover': { backgroundColor: selectedSkills.includes(skill) ? '#00cbd6' : 'rgba(255,255,255,0.1)' }
+                                                    '& .MuiOutlinedInput-root': {
+                                                        color: '#fff',
+                                                        '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
+                                                    }
                                                 }}
                                             />
-                                        ))}
-                                    </Box>
+                                        )}
+                                        renderTags={(value, getTagProps) =>
+                                            value.map((option, index) => (
+                                                <Chip
+                                                    label={option}
+                                                    {...getTagProps({ index })}
+                                                    sx={{
+                                                        bgcolor: 'rgba(0, 242, 254, 0.2)',
+                                                        color: '#00f2fe',
+                                                        border: '1px solid rgba(0, 242, 254, 0.3)'
+                                                    }}
+                                                />
+                                            ))
+                                        }
+                                    />
                                 </Grid>
 
                                 {/* Location */}
                                 <Grid item xs={12} md={4}>
                                     <Typography variant="subtitle2" color="text.secondary" mb={2}>LOCATION</Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                        {LOCATIONS.map(loc => (
-                                            <Chip
-                                                key={loc}
-                                                label={loc}
-                                                onClick={() => toggleFilter(loc, selectedLocations, setSelectedLocations)}
+                                    <Autocomplete
+                                        multiple
+                                        options={locationOptions}
+                                        value={selectedLocations}
+                                        onChange={(event, newValue) => setSelectedLocations(newValue)}
+                                        onInputChange={(event, newInputValue) => setLocationInput(newInputValue)}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                placeholder="Select Location"
+                                                variant="outlined"
                                                 sx={{
-                                                    backgroundColor: selectedLocations.includes(loc) ? '#4facfe' : 'rgba(255,255,255,0.05)',
-                                                    color: selectedLocations.includes(loc) ? '#000' : 'text.secondary',
-                                                    border: selectedLocations.includes(loc) ? 'none' : '1px solid rgba(255,255,255,0.1)',
-                                                    '&:hover': { backgroundColor: selectedLocations.includes(loc) ? '#3b8ecc' : 'rgba(255,255,255,0.1)' }
+                                                    '& .MuiOutlinedInput-root': {
+                                                        color: '#fff',
+                                                        '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
+                                                    }
                                                 }}
                                             />
-                                        ))}
-                                    </Box>
+                                        )}
+                                        renderTags={(value, getTagProps) =>
+                                            value.map((option, index) => (
+                                                <Chip
+                                                    label={option}
+                                                    {...getTagProps({ index })}
+                                                    sx={{
+                                                        bgcolor: 'rgba(79, 172, 254, 0.2)',
+                                                        color: '#4facfe',
+                                                        border: '1px solid rgba(79, 172, 254, 0.3)'
+                                                    }}
+                                                />
+                                            ))
+                                        }
+                                    />
                                 </Grid>
 
                                 {/* Experience */}
@@ -288,7 +394,17 @@ function RecruiterDashboard() {
                                                         </Box>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Typography variant="body2" color="text.secondary">{u.email}</Typography>
+                                                        <Box>
+                                                            <Typography variant="body2" color="text.secondary">{u.email}</Typography>
+                                                            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+                                                                {u.skills && u.skills.map(skill => (
+                                                                    <Chip key={skill} label={skill} size="small" sx={{ fontSize: '0.65rem', height: 20 }} />
+                                                                ))}
+                                                            </Box>
+                                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                                                {u.location}
+                                                            </Typography>
+                                                        </Box>
                                                     </TableCell>
                                                     <TableCell>
                                                         <Chip
