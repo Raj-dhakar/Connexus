@@ -3,11 +3,13 @@ package com.connexus.user.controller;
 import com.connexus.user.advices.ApiResponse;
 import com.connexus.user.dto.SignupRequestDto;
 import com.connexus.user.dto.UserDto;
+import com.connexus.user.service.CloudinaryService;
 import com.connexus.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final CloudinaryService cloudinaryService;
 
     @GetMapping("/all")
     public ResponseEntity<List<UserDto>> getAllUsers() {
@@ -55,4 +58,16 @@ public class UserController {
     public ResponseEntity<ApiResponse<String>> hashPasswordsOfAllUsers() {
         return ResponseEntity.ok(new ApiResponse(userService.hashPasswordsOfAllUsers()));
     }
+
+    @PostMapping("/self/profile-image")
+    public ResponseEntity<ApiResponse<String>> uploadProfileImage(
+            @RequestParam MultipartFile file
+    ) {
+
+        String imageUrl = cloudinaryService.uploadFile(file, "users");
+
+        userService.updateProfileImage(imageUrl);
+        return ResponseEntity.ok(new ApiResponse(imageUrl));
+    }
+
 }

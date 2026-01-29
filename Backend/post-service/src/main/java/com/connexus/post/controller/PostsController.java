@@ -1,17 +1,22 @@
 package com.connexus.post.controller;
 
+import com.connexus.post.advices.ApiResponse;
 import com.connexus.post.auth.UserContextHolder;
 import com.connexus.post.dto.PostCreateRequestDto;
 import com.connexus.post.dto.PostDto;
 import com.connexus.post.service.PostService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/posts")
@@ -20,11 +25,14 @@ public class PostsController {
 
     private final PostService postsService;
 
-    @PostMapping
-    public ResponseEntity<PostDto> createPost(@RequestBody PostCreateRequestDto postDto,
-            HttpServletRequest servletRequest) {
-
-        PostDto createdPost = postsService.createPost(postDto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PostDto> createPost(
+            @RequestPart("post") String postJson,
+            @RequestPart(value = "media", required = false) MultipartFile media
+    ) throws JsonProcessingException {
+        PostCreateRequestDto postDto =
+                new ObjectMapper().readValue(postJson, PostCreateRequestDto.class);
+        PostDto createdPost = postsService.createPost(postDto, media);
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
 
@@ -56,5 +64,11 @@ public class PostsController {
         List<PostDto> posts = postsService.getAllPostsOfUser(userId);
         return ResponseEntity.ok(posts);
     }
+
+    @PostMapping(value = "/test", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<String>> test(@RequestPart("file") MultipartFile file) {
+        return ResponseEntity.ok(new ApiResponse(file.getOriginalFilename()));
+    }
+
 
 }

@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -31,13 +32,21 @@ public class PostService {
     private final PostRepository postRepository;
     private final ModelMapper modelMapper;
     private final ConnectionsClient connectionClient;
-    private final KafkaTemplate<Long, PostCreatedEvent> kafkaTemplate;
+    //private final KafkaTemplate<Long, PostCreatedEvent> kafkaTemplate;
+    private final CloudinaryService cloudinaryService;
 
-    public PostDto createPost(PostCreateRequestDto postDto) {
+    public PostDto createPost(PostCreateRequestDto postDto, MultipartFile media) {
         Long userId = UserContextHolder.getCurrentUserId();
         Post post = modelMapper.map(postDto, Post.class);
         post.setUserId(userId);
+        if (media != null && !media.isEmpty()) {
+            String mediaUrl =
+                    cloudinaryService.uploadFile(media, "posts");
+            post.setMediaUrl(mediaUrl);
+            log.info("Image url {}", mediaUrl);
+        }
         Post savedPost = postRepository.save(post);
+        /*
         // Get first degree connections
         // List<PersonDto> firstConnections = connectionClient.getFirstConnections();
         // notify all users
@@ -48,6 +57,8 @@ public class PostService {
                 .build();
 
         kafkaTemplate.send("post-created-topic", postCreatedEvent);
+
+         */
         return modelMapper.map(savedPost, PostDto.class);
     }
 
@@ -83,4 +94,6 @@ public class PostService {
                 .map((element) -> modelMapper.map(element, PostDto.class))
                 .collect(Collectors.toList());
     }
+
+
 }

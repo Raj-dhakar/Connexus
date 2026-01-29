@@ -1,5 +1,6 @@
 package com.connexus.user.service;
 
+import com.connexus.user.auth.UserContextHolder;
 import com.connexus.user.repository.UserRepository;
 import com.connexus.user.entity.User;
 import com.connexus.user.entity.UserRole;
@@ -136,5 +137,14 @@ public class UserService {
                     userRepository.save(user);
                 });
         return "All users password are hashed successfully !!!";
+    }
+
+    public void updateProfileImage(String imageUrl) {
+        Long userId = UserContextHolder.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setProfileImage(imageUrl);
+        userRepository.save(user);
     }
 }

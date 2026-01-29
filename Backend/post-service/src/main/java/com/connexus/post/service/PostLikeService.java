@@ -21,7 +21,7 @@ public class PostLikeService {
 
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postsRepository;
-    private final KafkaTemplate<Long, PostLikedEvent> kafkaTemplate;
+    //private final KafkaTemplate<Long, PostLikedEvent> kafkaTemplate;
 
     public void likePost(Long postId) {
         log.info("Attempting to like the post with id: {}", postId);
@@ -37,6 +37,7 @@ public class PostLikeService {
         postLike.setPostId(postId);
         postLike.setUserId(userId);
         postLikeRepository.save(postLike);
+        /*
         // Notify all users
         PostLikedEvent postLikedEvent = PostLikedEvent.builder()
                 .postId(postId)
@@ -44,6 +45,8 @@ public class PostLikeService {
                 .creatorId(post.getUserId()).build();
 
         kafkaTemplate.send("post-liked-topic", postId, postLikedEvent); // ordered by postId
+
+         */
         log.info("Post with id: {} liked successfully", postId);
     }
 

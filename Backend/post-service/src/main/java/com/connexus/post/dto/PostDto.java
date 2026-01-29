@@ -12,4 +12,5 @@ public class PostDto {
     private String title;
     private String description;
     private Long userId;
+    private String mediaUrl;
 }

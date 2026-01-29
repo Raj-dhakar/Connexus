@@ -22,4 +22,6 @@ public class Post extends BaseEntity{
 
     @Column(nullable = false)
     private Long userId;
+
+    private String mediaUrl;
 }
