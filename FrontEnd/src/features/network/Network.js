@@ -15,7 +15,7 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { Message as MessageIcon } from '@mui/icons-material';
 import connectionApi from '../../api/connectionApi';
-import Invitation from './Invitation';
+import UserAvatar from '../common/UserAvatar';
 
 function Network() {
     const location = useLocation();
@@ -63,11 +63,11 @@ function Network() {
                             {connections.map((person) => (
                                 <Grid item xs={12} sm={6} md={4} key={person.id}>
                                     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', p: 2 }}>
-                                        <Avatar
+                                        <UserAvatar
+                                            userId={person.userId}
+                                            name={person.name}
                                             sx={{ width: 80, height: 80, mb: 2, border: `3px solid ${theme.palette.background.paper}`, boxShadow: theme.shadows[2], bgcolor: theme.palette.primary.main, fontSize: '2rem' }}
-                                        >
-                                            {person.name ? person.name.charAt(0).toUpperCase() : '?'}
-                                        </Avatar>
+                                        />
                                         <CardContent sx={{ textAlign: 'center', p: 0, mb: 2 }}>
                                             <Typography variant="h6" component="div" fontWeight="bold">
                                                 {person.name || 'Unknown User'}

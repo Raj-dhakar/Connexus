@@ -2,6 +2,7 @@ import { Avatar, Button, List, ListItem, ListItemText, Paper } from '@mui/materi
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import connectionApi from '../../api/connectionApi'
+import UserAvatar from '../common/UserAvatar'
 
 function Invitation({ showEmptyMessage = true }) {
 
@@ -64,9 +65,7 @@ function Invitation({ showEmptyMessage = true }) {
                     return <Paper key={eachUser.id} sx={{ mb: 2 }}>
                         <List>
                             <ListItem>
-                                <Avatar sx={{ bgcolor: 'primary.main' }}>
-                                    {eachUser.name ? eachUser.name.charAt(0).toUpperCase() : '?'}
-                                </Avatar>
+                                <UserAvatar userId={eachUser.userId || eachUser.id} name={eachUser.name} sx={{ bgcolor: 'primary.main' }} />
                                 <ListItemText
                                     primary={eachUser.name || eachUser.username || "Unknown"}
                                     secondary={eachUser.role || eachUser.designation || "Member"}

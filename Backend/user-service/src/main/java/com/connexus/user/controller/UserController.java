@@ -31,29 +31,27 @@ public class UserController {
 
         return ResponseEntity.ok(userService.getUserProfile(userId));
     }
-    
+
     @GetMapping("/self")
     public ResponseEntity<UserDto> getUserById() {
 
         return ResponseEntity.ok(userService.getUserById());
     }
-    
+
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-    	  userService.deleteUser(userId);
+        userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
-    
+
     @PutMapping("/{userId}")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable Long userId,
-            @RequestBody UserDto userDto
-    ) {
+            @RequestBody UserDto userDto) {
         return ResponseEntity.ok(
-                userService.updateUser(userId, userDto)
-        );
+                userService.updateUser(userId, userDto));
     }
-    
+
     @PostMapping("/hash-passwords")
     public ResponseEntity<ApiResponse<String>> hashPasswordsOfAllUsers() {
         return ResponseEntity.ok(new ApiResponse(userService.hashPasswordsOfAllUsers()));
@@ -61,12 +59,17 @@ public class UserController {
 
     @PostMapping("/self/profile-image")
     public ResponseEntity<ApiResponse<String>> uploadProfileImage(
-            @RequestParam MultipartFile file
-    ) {
+            @RequestParam MultipartFile file) {
 
         String imageUrl = cloudinaryService.uploadFile(file, "users");
 
         userService.updateProfileImage(imageUrl);
+        return ResponseEntity.ok(new ApiResponse(imageUrl));
+    }
+
+    @GetMapping("/{userId}/profile-image")
+    public ResponseEntity<ApiResponse<String>> getProfileImage(@PathVariable Long userId) {
+        String imageUrl = userService.getProfileImage(userId);
         return ResponseEntity.ok(new ApiResponse(imageUrl));
     }
 

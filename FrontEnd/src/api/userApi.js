@@ -17,6 +17,9 @@ const userApi = {
             },
         });
     },
+    getProfileImage: (userId) => {
+        return axiosInstance.get(`/users/${userId}/profile-image`);
+    },
     // Add other user related calls here
 };
 

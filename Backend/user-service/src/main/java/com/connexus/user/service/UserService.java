@@ -47,19 +47,16 @@ public class UserService {
     public UserDto updateUser(Long userId, UserDto userDto) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not exists with id : " + userId
-                        )
-                );
-        
-        if(userDto.getDesignation() != null) {
-        	user.setDesignation(userDto.getDesignation());
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not exists with id : " + userId));
+
+        if (userDto.getDesignation() != null) {
+            user.setDesignation(userDto.getDesignation());
         }
         if (userDto.getFirstName() != null) {
             user.setFirstName(userDto.getFirstName());
         }
-        
+
         if (userDto.getEmail() != null) {
             user.setEmail(userDto.getEmail());
         }
@@ -83,7 +80,7 @@ public class UserService {
         if (userDto.getProfileImage() != null) {
             user.setProfileImage(userDto.getProfileImage());
         }
-        
+
         if (userDto.getAbout() != null) {
             user.setAbout(userDto.getAbout());
         }
@@ -104,31 +101,24 @@ public class UserService {
         return modelMapper.map(updatedUser, UserDto.class);
     }
 
-    
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException(
-                    "User not exists with id : " + userId
-            );
+                    "User not exists with id : " + userId);
         }
 
         userRepository.deleteById(userId);
-       
+
     }
-    
-    
+
     public UserDto getUserById() {
-    	Long userId = 1L;
+        Long userId = 1L;
         User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not exists with id : " + userId
-                        )
-                );
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not exists with id : " + userId));
 
         return modelMapper.map(user, UserDto.class);
     }
-
 
     public String hashPasswordsOfAllUsers() {
         userRepository.findAll()
@@ -146,5 +136,14 @@ public class UserService {
 
         user.setProfileImage(imageUrl);
         userRepository.save(user);
+    }
+
+    public String getProfileImage(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElse(null); // Return null if user not found, controller handles default
+        if (user != null) {
+            return user.getProfileImage();
+        }
+        return null;
     }
 }

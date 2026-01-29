@@ -20,7 +20,8 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    InputAdornment
+    InputAdornment,
+    CircularProgress
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -237,7 +238,8 @@ const ProfileDialog = ({ open, onClose, user }) => {
                 if (isOwnProfile) {
                     updateUser({
                         ...currentUser,
-                        profileImage: newImageUrl
+                        profileImage: newImageUrl,
+                        profile_image: newImageUrl // Ensure compatibility with components expecting snake_case (like Navbar)
                     });
                 }
             }
@@ -325,6 +327,25 @@ const ProfileDialog = ({ open, onClose, user }) => {
                         <Grid item xs={12} md={4} lg={3}>
                             <Box sx={{ position: 'relative', top: -80, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <Box sx={{ position: 'relative' }}>
+                                    {uploadingImage && (
+                                        <Box
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                width: '100%',
+                                                height: '100%',
+                                                borderRadius: '50%',
+                                                bgcolor: 'rgba(0, 0, 0, 0.5)',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                zIndex: 2,
+                                            }}
+                                        >
+                                            <CircularProgress color="secondary" />
+                                        </Box>
+                                    )}
                                     <Avatar
                                         src={renderUser.profileImage}
                                         sx={{
@@ -352,7 +373,8 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                                     bgcolor: 'primary.main',
                                                     color: 'white',
                                                     '&:hover': { bgcolor: 'primary.dark' },
-                                                    boxShadow: 2
+                                                    boxShadow: 2,
+                                                    zIndex: 3 // Ensure above overlay if needed, though usually overlay covers image
                                                 }}
                                                 onClick={handleImageClick}
                                                 disabled={uploadingImage}
@@ -602,7 +624,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                     </Grid>
                 </Container>
             </Box>
-        </Dialog>
+        </Dialog >
     );
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import connectionApi from '../../api/connectionApi'
 import { Avatar, Button, List, ListItem, ListItemText, Paper } from '@mui/material'
 import { useLocation } from 'react-router-dom'
+import UserAvatar from '../common/UserAvatar'
 
 function Connection() {
 
@@ -66,9 +67,7 @@ function Connection() {
                     <Paper key={otherUser.id || otherUser.userId} sx={{ mb: 2 }}>
                         <List>
                             <ListItem>
-                                <Avatar sx={{ bgcolor: 'secondary.main' }}>
-                                    {otherUser.name ? otherUser.name.charAt(0).toUpperCase() : '?'}
-                                </Avatar>
+                                <UserAvatar userId={otherUser.userId || otherUser.id} name={otherUser.name} sx={{ bgcolor: 'secondary.main' }} />
                                 <ListItemText
                                     primary={otherUser.name || otherUser.username || "Unknown"}
                                     secondary={otherUser.role || otherUser.designation || "Member"}

@@ -14,15 +14,17 @@ import {
     IconButton,
     useTheme,
     CircularProgress,
-    Badge
+    Badge,
+    Skeleton
 } from '@mui/material';
-import { Send as SendIcon } from '@mui/icons-material';
+import { Send as SendIcon, ChatBubbleOutline as ChatIcon, SentimentSatisfiedAlt as EmptyChatIcon } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import useAuth from '../auth/useAuth';
 import connectionApi from '../../api/connectionApi';
 import messagingApi from '../../api/messagingApi';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
+import UserAvatar from '../common/UserAvatar';
 
 function Message() {
     const theme = useTheme();
@@ -244,25 +246,40 @@ function Message() {
                                 <Typography variant="h6" fontWeight="bold">Messages</Typography>
                             </Box>
                             <List sx={{ overflowY: 'auto', flexGrow: 1 }}>
-                                {connections.map((conn) => (
-                                    <ListItem
-                                        button
-                                        key={conn.userId || conn.id}
-                                        selected={activeChatUser && (String(activeChatUser.userId) === String(conn.userId))}
-                                        onClick={() => setActiveChatUser(conn)}
-                                    >
-                                        <ListItemAvatar>
-                                            <Badge badgeContent={unreadCounts[conn.userId || conn.id]} color="error">
-                                                <Avatar src={conn.profileImage || conn.profile_image} />
-                                            </Badge>
-                                        </ListItemAvatar>
-                                        <ListItemText
-                                            primary={conn.name || `${conn.firstName} ${conn.lastName}`}
-                                            secondary={conn.designation || ""}
-                                            primaryTypographyProps={{ fontWeight: 'medium' }}
-                                        />
-                                    </ListItem>
-                                ))}
+                                {isLoadingConnections ? (
+                                    // Shimmer Loading Effect
+                                    Array.from(new Array(5)).map((_, index) => (
+                                        <ListItem key={index}>
+                                            <ListItemAvatar>
+                                                <Skeleton variant="circular" width={40} height={40} />
+                                            </ListItemAvatar>
+                                            <ListItemText
+                                                primary={<Skeleton variant="text" width="60%" />}
+                                                secondary={<Skeleton variant="text" width="40%" />}
+                                            />
+                                        </ListItem>
+                                    ))
+                                ) : (
+                                    connections.map((conn) => (
+                                        <ListItem
+                                            button
+                                            key={conn.userId || conn.id}
+                                            selected={activeChatUser && (String(activeChatUser.userId) === String(conn.userId))}
+                                            onClick={() => setActiveChatUser(conn)}
+                                        >
+                                            <ListItemAvatar>
+                                                <Badge badgeContent={unreadCounts[conn.userId || conn.id]} color="error">
+                                                    <UserAvatar userId={conn.userId || conn.id} name={conn.name} />
+                                                </Badge>
+                                            </ListItemAvatar>
+                                            <ListItemText
+                                                primary={conn.name || `${conn.firstName} ${conn.lastName}`}
+                                                secondary={conn.designation || ""}
+                                                primaryTypographyProps={{ fontWeight: 'medium' }}
+                                            />
+                                        </ListItem>
+                                    ))
+                                )}
                                 {connections.length === 0 && !isLoadingConnections && (
                                     <Box p={2} textAlign="center">
                                         <Typography variant="body2" color="text.secondary">No connected users yet.</Typography>
@@ -278,33 +295,48 @@ function Message() {
                             {activeChatUser ? (
                                 <>
                                     <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center' }}>
-                                        <Avatar src={activeChatUser.profileImage || activeChatUser.profile_image} sx={{ mr: 2 }} />
+                                        <UserAvatar userId={activeChatUser.userId || activeChatUser.id} name={activeChatUser.name} sx={{ mr: 2 }} />
                                         <Typography variant="h6">{activeChatUser.name || `${activeChatUser.firstName} ${activeChatUser.lastName}`}</Typography>
                                     </Box>
 
-                                    <Box sx={{ flexGrow: 1, p: 2, overflowY: 'auto', bgcolor: '#f8fafc' }}>
-                                        {messages.map((msg, index) => {
-                                            const myId = currentUser?.id || currentUser?.user_id || currentUser?.userId;
-                                            const isMe = String(msg.senderId) === String(myId);
-                                            return (
-                                                <Box key={index} sx={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', mb: 2 }}>
-                                                    <Paper sx={{
-                                                        p: 2,
-                                                        bgcolor: isMe ? 'primary.main' : 'white',
-                                                        color: isMe ? 'white' : 'text.primary',
-                                                        borderRadius: 2,
-                                                        maxWidth: '70%',
-                                                        boxShadow: 1
-                                                    }}>
-                                                        <Typography variant="body1">{msg.content}</Typography>
-                                                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.8, textAlign: 'right' }}>
-                                                            {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
-                                                        </Typography>
-                                                    </Paper>
-                                                </Box>
-                                            );
-                                        })}
-                                        <div ref={messagesEndRef} />
+                                    <Box sx={{ flexGrow: 1, p: 2, overflowY: 'auto', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+                                        {messages.length === 0 ? (
+                                            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.7 }}>
+                                                <EmptyChatIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2, opacity: 0.5 }} />
+                                                <Typography variant="h6" color="text.secondary" gutterBottom>
+                                                    No messages yet
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ maxWidth: 300 }}>
+                                                    Start the conversation with {activeChatUser.name || activeChatUser.firstName}!
+                                                    Say meaningful things.
+                                                </Typography>
+                                            </Box>
+                                        ) : (
+                                            <>
+                                                {messages.map((msg, index) => {
+                                                    const myId = currentUser?.id || currentUser?.user_id || currentUser?.userId;
+                                                    const isMe = String(msg.senderId) === String(myId);
+                                                    return (
+                                                        <Box key={index} sx={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', mb: 2 }}>
+                                                            <Paper sx={{
+                                                                p: 2,
+                                                                bgcolor: isMe ? 'primary.main' : 'white',
+                                                                color: isMe ? 'white' : 'text.primary',
+                                                                borderRadius: 2,
+                                                                maxWidth: '70%',
+                                                                boxShadow: 1
+                                                            }}>
+                                                                <Typography variant="body1">{msg.content}</Typography>
+                                                                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.8, textAlign: 'right' }}>
+                                                                    {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                                                                </Typography>
+                                                            </Paper>
+                                                        </Box>
+                                                    );
+                                                })}
+                                                <div ref={messagesEndRef} />
+                                            </>
+                                        )}
                                     </Box>
 
                                     <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
