@@ -20,4 +20,8 @@ public class Message {
     private String content;
     private Date timestamp;
     private MessageStatus status;
+    private String replyToId;
+    private String replyToContent;
+    private Boolean edited = false;
+    private java.util.Map<String, String> reactions = new java.util.HashMap<>();
 }

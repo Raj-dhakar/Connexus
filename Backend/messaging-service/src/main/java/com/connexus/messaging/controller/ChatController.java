@@ -12,6 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Date;
 import java.util.List;
@@ -72,5 +75,68 @@ public class ChatController {
             messageRepository.saveAll(messages);
         }
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/messages/{id}")
+    @ResponseBody
+    public ResponseEntity<Message> editMessage(@PathVariable String id, @RequestBody Message messageDetails) {
+        return messageRepository.findById(id).map(message -> {
+            message.setContent(messageDetails.getContent());
+            message.setEdited(true);
+            Message updatedMessage = messageRepository.save(message);
+
+            // Notify users
+            messagingTemplate.convertAndSend("/queue/messages/" + message.getRecipientId(), updatedMessage);
+            messagingTemplate.convertAndSend("/queue/messages/" + message.getSenderId(), updatedMessage);
+
+            return ResponseEntity.ok(updatedMessage);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/messages/{id}/react")
+    @ResponseBody
+    public ResponseEntity<Message> reactMessage(@PathVariable String id,
+            @RequestBody java.util.Map<String, String> payload) {
+        String userId = payload.get("userId");
+        String reaction = payload.get("reaction");
+
+        if (userId == null || reaction == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return messageRepository.findById(id).map(message -> {
+            if (message.getReactions() == null) {
+                message.setReactions(new java.util.HashMap<>());
+            }
+            // Toggle or Update? Usually replace. user can react only once per msg?
+            // If same reaction, maybe remove? For now, just set.
+            if (message.getReactions().containsKey(userId) && message.getReactions().get(userId).equals(reaction)) {
+                // If same reaction, remove it (toggle off)
+                message.getReactions().remove(userId);
+            } else {
+                message.getReactions().put(userId, reaction);
+            }
+
+            Message updatedMessage = messageRepository.save(message);
+
+            messagingTemplate.convertAndSend("/queue/messages/" + message.getRecipientId(), updatedMessage);
+            messagingTemplate.convertAndSend("/queue/messages/" + message.getSenderId(), updatedMessage);
+
+            return ResponseEntity.ok(updatedMessage);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/messages/{id}")
+    @ResponseBody
+    public ResponseEntity<Void> deleteMessage(@PathVariable String id) {
+        return messageRepository.findById(id).map(message -> {
+            message.setStatus(MessageStatus.DELETED);
+            messageRepository.save(message);
+
+            messagingTemplate.convertAndSend("/queue/messages/" + message.getRecipientId(), message);
+            messagingTemplate.convertAndSend("/queue/messages/" + message.getSenderId(), message);
+
+            return ResponseEntity.ok().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

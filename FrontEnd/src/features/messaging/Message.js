@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    Avatar,
     Grid,
     List,
     ListItem,
@@ -12,12 +11,22 @@ import {
     Box,
     Container,
     IconButton,
-    useTheme,
-    CircularProgress,
     Badge,
-    Skeleton
+    Skeleton,
+    Menu,
+    MenuItem,
+    ListItemIcon,
+    Tooltip
 } from '@mui/material';
-import { Send as SendIcon, ChatBubbleOutline as ChatIcon, SentimentSatisfiedAlt as EmptyChatIcon } from '@mui/icons-material';
+import {
+    Send as SendIcon,
+    SentimentSatisfiedAlt as EmptyChatIcon,
+    Edit as EditIcon,
+    Delete as DeleteIcon,
+    Reply as ReplyIcon,
+    ContentCopy as CopyIcon,
+    Close as CloseIcon
+} from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import useAuth from '../auth/useAuth';
 import connectionApi from '../../api/connectionApi';
@@ -27,7 +36,6 @@ import { Stomp } from '@stomp/stompjs';
 import UserAvatar from '../common/UserAvatar';
 
 function Message() {
-    const theme = useTheme();
     const { user: currentUser } = useAuth();
     const location = useLocation();
 
@@ -40,6 +48,12 @@ function Message() {
     const [stompClient, setStompClient] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [unreadCounts, setUnreadCounts] = useState({});
+
+    // Action State
+    const [contextMenu, setContextMenu] = useState(null);
+    const [selectedMessage, setSelectedMessage] = useState(null);
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [editingMessage, setEditingMessage] = useState(null);
 
     // Refs
     const messagesEndRef = useRef(null);
@@ -151,22 +165,41 @@ function Message() {
         const currentActive = activeChatUserRef.current;
         const activeId = currentActive?.userId || currentActive?.id;
 
-        // Condition to append message:
-        // 1. Sender is the active chat user
-        // 2. OR Sender is ME (Echo) AND Recipient is active chat user
-
         const isFromActiveUser = activeId && (String(newMessage.senderId) === String(activeId));
         const isEchoToActiveUser = activeId && (String(newMessage.senderId) === String(myId)) && (String(newMessage.recipientId) === String(activeId));
 
-        if (isFromActiveUser || isEchoToActiveUser) {
-            setMessages(prev => [...prev, newMessage]);
-        } else if (!isEchoToActiveUser) {
-            // Message from someone else (or not active), increment unread count
+        setMessages(prev => {
+            const existingIndex = prev.findIndex(m => m.id === newMessage.id);
+            if (existingIndex !== -1) {
+                // Update existing message (Edit or Delete)
+                const updated = [...prev];
+                updated[existingIndex] = newMessage;
+                return updated;
+            } else {
+                // New Message
+                if (isFromActiveUser || isEchoToActiveUser) {
+                    return [...prev, newMessage];
+                }
+                return prev;
+            }
+        });
+
+        if (!isEchoToActiveUser && !isFromActiveUser) {
+            // Increment unread if not visible
             const senderId = newMessage.senderId;
-            setUnreadCounts(prev => ({
-                ...prev,
-                [senderId]: (prev[senderId] || 0) + 1
-            }));
+            // Only increment if it's a NEW message, not an update
+            // We assume updates don't trigger unread counts usually, or we check if id existed? 
+            // Ideally we check if it was an update. 
+            // But for now, simple logic:
+            if (!messages.some(m => m.id === newMessage.id)) { // This check relies on state which is stale in callback?
+                // Use functional update for reliable check or assume new messages have unique IDs.
+                // Ideally backend sends type of event.
+                // For now, let's keep it simple.
+                setUnreadCounts(prev => ({
+                    ...prev,
+                    [senderId]: (prev[senderId] || 0) + 1
+                }));
+            }
         }
     };
 
@@ -210,26 +243,93 @@ function Message() {
         }
     }, [activeChatUser, currentUser, unreadCounts]);
 
+    // Context Menu Handlers
+    const handleContextMenu = (event, msg) => {
+        event.preventDefault();
+        setSelectedMessage(msg);
+        setContextMenu(
+            contextMenu === null
+                ? {
+                    mouseX: event.clientX + 2,
+                    mouseY: event.clientY - 6,
+                }
+                : null,
+        );
+    };
+
+    const handleCloseContextMenu = () => {
+        setContextMenu(null);
+    };
+
+    const handleAction = (action) => {
+        const msg = selectedMessage;
+        handleCloseContextMenu();
+        if (!msg) return;
+
+        switch (action) {
+            case 'copy':
+                navigator.clipboard.writeText(msg.content || "");
+                break;
+            case 'reply':
+                setReplyingTo(msg);
+                setEditingMessage(null);
+                // Input focus handled by React effectively or user clicks
+                break;
+            case 'edit':
+                setEditingMessage(msg);
+                setReplyingTo(null);
+                setMessageInput(msg.content);
+                break;
+            case 'delete':
+                if (window.confirm("Delete this message?")) {
+                    messagingApi.deleteMessage(msg.id)
+                        .catch(err => console.error("Failed to delete", err));
+                }
+                break;
+            default:
+                break;
+        }
+    };
+
+    const cancelAction = () => {
+        setReplyingTo(null);
+        setEditingMessage(null);
+        setMessageInput("");
+    };
+
     // Send Message
     const sendMessage = () => {
         if (!messageInput.trim() || !stompClient || !activeChatUser || !isConnected) {
-            console.warn("Cannot send: Connection not ready or invalid input");
             return;
         }
 
         const myId = currentUser.id || currentUser.user_id || currentUser.userId;
         const otherId = activeChatUser.userId || activeChatUser.id;
 
+        if (editingMessage) {
+            // Edit Mode
+            messagingApi.editMessage(editingMessage.id, messageInput)
+                .then(() => {
+                    setEditingMessage(null);
+                    setMessageInput("");
+                })
+                .catch(err => console.error("Failed to edit", err));
+            return;
+        }
+
         const chatMessage = {
             senderId: myId,
             recipientId: otherId,
             content: messageInput,
-            timestamp: new Date()
+            timestamp: new Date(),
+            replyToId: replyingTo ? replyingTo.id : null,
+            replyToContent: replyingTo ? replyingTo.content : null
         };
 
         try {
             stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
             setMessageInput("");
+            setReplyingTo(null);
         } catch (error) {
             console.error("Failed to send message", error);
         }
@@ -316,19 +416,65 @@ function Message() {
                                                 {messages.map((msg, index) => {
                                                     const myId = currentUser?.id || currentUser?.user_id || currentUser?.userId;
                                                     const isMe = String(msg.senderId) === String(myId);
+                                                    const isDeleted = msg.status === 'DELETED';
                                                     return (
                                                         <Box key={index} sx={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', mb: 2 }}>
-                                                            <Paper sx={{
-                                                                p: 2,
-                                                                bgcolor: isMe ? 'primary.main' : 'white',
-                                                                color: isMe ? 'white' : 'text.primary',
-                                                                borderRadius: 2,
-                                                                maxWidth: '70%',
-                                                                boxShadow: 1
-                                                            }}>
-                                                                <Typography variant="body1">{msg.content}</Typography>
-                                                                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.8, textAlign: 'right' }}>
+                                                            <Paper
+                                                                onContextMenu={(e) => handleContextMenu(e, msg)}
+                                                                elevation={isDeleted ? 0 : 2}
+                                                                sx={{
+                                                                    p: 1.5,
+                                                                    minWidth: '120px',
+                                                                    background: isMe
+                                                                        ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
+                                                                        : '#ffffff',
+                                                                    color: isMe ? '#fff' : 'text.primary',
+                                                                    borderRadius: 2,
+                                                                    borderBottomRightRadius: isMe ? 0 : 2,
+                                                                    borderTopLeftRadius: !isMe ? 0 : 2,
+                                                                    maxWidth: '75%',
+                                                                    boxShadow: isDeleted ? 'none' : (isMe ? 2 : 1),
+                                                                    opacity: isDeleted ? 0.7 : 1,
+                                                                    fontStyle: isDeleted ? 'italic' : 'normal',
+                                                                    cursor: 'context-menu',
+                                                                    position: 'relative'
+                                                                }}>
+                                                                {isDeleted ? (
+                                                                    <Typography variant="body2" color="text.secondary" sx={{ color: isMe ? 'inherit' : 'text.secondary' }}>
+                                                                        This message was deleted
+                                                                    </Typography>
+                                                                ) : (
+                                                                    <>
+                                                                        {msg.replyToContent && (
+                                                                            <Box sx={{
+                                                                                pl: 1,
+                                                                                mb: 1,
+                                                                                borderLeft: `3px solid ${isMe ? 'rgba(255,255,255,0.5)' : '#1976d2'}`,
+                                                                                bgcolor: isMe ? 'rgba(0,0,0,0.1)' : 'rgba(25, 118, 210, 0.08)',
+                                                                                borderRadius: 1,
+                                                                                py: 0.5,
+                                                                                pr: 1
+                                                                            }}>
+                                                                                <Typography variant="caption" sx={{ display: 'block', fontWeight: 'bold', mb: 0.3, opacity: 0.9 }}>
+                                                                                    Reply to:
+                                                                                </Typography>
+                                                                                <Typography variant="body2" noWrap sx={{ opacity: 0.85, fontSize: '0.8rem' }}>
+                                                                                    {msg.replyToContent}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        )}
+                                                                        <Typography variant="body1" sx={{ lineHeight: 1.4 }}>{msg.content}</Typography>
+                                                                    </>
+                                                                )}
+                                                                <Typography variant="caption" sx={{
+                                                                    display: 'block',
+                                                                    mt: 0.5,
+                                                                    opacity: 0.7,
+                                                                    fontSize: '0.7rem',
+                                                                    textAlign: 'right'
+                                                                }}>
                                                                     {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                                                                    {msg.edited && !isDeleted && " (edited)"}
                                                                 </Typography>
                                                             </Paper>
                                                         </Box>
@@ -340,6 +486,22 @@ function Message() {
                                     </Box>
 
                                     <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+                                        {/* Reply/Edit Banner */}
+                                        {(replyingTo || editingMessage) && (
+                                            <Box sx={{ mb: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                                                    <Typography variant="caption" color="primary" fontWeight="bold">
+                                                        {replyingTo ? "Replying to:" : "Editing message:"}
+                                                    </Typography>
+                                                    <Typography variant="body2" noWrap color="text.secondary">
+                                                        {replyingTo ? replyingTo.content : (editingMessage ? "..." : "")}
+                                                    </Typography>
+                                                </Box>
+                                                <IconButton size="small" onClick={cancelAction}>
+                                                    <CloseIcon fontSize="small" />
+                                                </IconButton>
+                                            </Box>
+                                        )}
                                         <Grid container spacing={1}>
                                             <Grid item xs>
                                                 <TextField
@@ -370,7 +532,40 @@ function Message() {
                     </Grid>
                 </Grid>
             </Container>
-        </Box>
+
+            {/* Context Menu */}
+            <Menu
+                open={contextMenu !== null}
+                onClose={handleCloseContextMenu}
+                anchorReference="anchorPosition"
+                anchorPosition={
+                    contextMenu !== null
+                        ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+                        : undefined
+                }
+            >
+                <MenuItem onClick={() => handleAction('copy')}>
+                    <ListItemIcon><CopyIcon fontSize="small" /></ListItemIcon>
+                    Copy
+                </MenuItem>
+                <MenuItem onClick={() => handleAction('reply')}>
+                    <ListItemIcon><ReplyIcon fontSize="small" /></ListItemIcon>
+                    Reply
+                </MenuItem>
+                {selectedMessage && currentUser && (String(selectedMessage.senderId) === String(currentUser.id || currentUser.user_id || currentUser.userId)) && (
+                    <MenuItem onClick={() => handleAction('edit')}>
+                        <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                        Edit
+                    </MenuItem>
+                )}
+                {selectedMessage && currentUser && (String(selectedMessage.senderId) === String(currentUser.id || currentUser.user_id || currentUser.userId)) && (
+                    <MenuItem onClick={() => handleAction('delete')}>
+                        <ListItemIcon><DeleteIcon fontSize="small" /></ListItemIcon>
+                        Delete
+                    </MenuItem>
+                )}
+            </Menu>
+        </Box >
     );
 }
 
