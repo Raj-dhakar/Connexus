@@ -183,7 +183,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
             // Let's create a local displayUser that overrides 'user' prop after save.
         } catch (error) {
             console.error("Failed to update profile:", error);
-            alert("Failed to save changes.");
+            alert("Failed to save changes. : " + error.response.data.error.message);
         } finally {
             setSaving(false);
         }

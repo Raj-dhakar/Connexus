@@ -22,21 +22,29 @@ function Invitation({ showEmptyMessage = true }) {
             }
         };
         fetchRequests();
+
+        // Poll every 5 seconds
+        const intervalId = setInterval(fetchRequests, 5000);
+        return () => clearInterval(intervalId);
     }, []);
 
     const deleteReq = async (userToIgnore) => {
+        const targetId = userToIgnore.userId || userToIgnore.id;
         try {
-            await connectionApi.rejectConnectionRequest(userToIgnore.userId || userToIgnore.id);
-            setRequests(requests.filter(u => (u.userId || u.id) !== (userToIgnore.userId || userToIgnore.id)));
+            // Optimistic update
+            setRequests(prev => prev.filter(u => (u.userId || u.id) !== targetId));
+            await connectionApi.rejectConnectionRequest(targetId);
         } catch (error) {
             console.error("Failed to ignore", error);
         }
     }
 
     const acceptReq = async (userToAccept) => {
+        const targetId = userToAccept.userId || userToAccept.id;
         try {
-            await connectionApi.acceptConnectionRequest(userToAccept.userId || userToAccept.id);
-            setRequests(requests.filter(u => (u.userId || u.id) !== (userToAccept.userId || userToAccept.id)));
+            // Optimistic update
+            setRequests(prev => prev.filter(u => (u.userId || u.id) !== targetId));
+            await connectionApi.acceptConnectionRequest(targetId);
         } catch (error) {
             console.error("Failed to accept", error);
         }

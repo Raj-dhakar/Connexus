@@ -39,13 +39,17 @@ function Network() {
         };
 
         fetchConnections();
+
+        // Poll every 5 seconds
+        const intervalId = setInterval(fetchConnections, 5000);
+        return () => clearInterval(intervalId);
     }, []);
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
             <Box sx={{ p: 4 }}>
                 <Container maxWidth="lg">
-                    <Invitation showEmptyMessage={false} />
+                    {/* Invitation component removed as per request */}
                     <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, color: 'text.primary' }}>
                         My Network
                     </Typography>

@@ -14,7 +14,15 @@ function Connection() {
             try {
                 const response = await connectionApi.getOtherPeople();
                 const data = Array.isArray(response.data) ? response.data : response.data.data || [];
-                setUserData(data);
+                setUserData(prevData => {
+                    // Simple de-duplication or just overwrite if it's a full refresh. 
+                    // Since we want "real-time" new users, overwriting is simplest, 
+                    // but we should avoid flickering if possible. 
+                    // For now, simple overwrite is standard for this type of polling unless complex merging is needed.
+                    // However, to keep the "removed" ones removed until next fetch might be tricky if fetch happens *before* change propagate.
+                    // But usually API returns fresh list. 
+                    return data;
+                });
             } catch (error) {
                 console.error("Failed to fetch recommendations", error);
             } finally {
@@ -23,16 +31,25 @@ function Connection() {
         };
 
         fetchRecommendations();
+
+        // Poll every 5 seconds
+        const intervalId = setInterval(fetchRecommendations, 5000);
+        return () => clearInterval(intervalId);
     }, []);
 
     const sendRequest = async (userId) => {
         try {
+            // Optimistically remove user from list immediately
+            setUserData(prevUserData => prevUserData.filter(user => {
+                const currentId = user.userId || user.id;
+                return currentId !== userId;
+            }));
+
             await connectionApi.sendConnectionRequest(userId);
-            // Optimistically remove user from list
-            setUserData(userData.filter(user => (user.userId || user.id) !== userId));
             console.log(`Request sent to user ${userId}`)
         } catch (error) {
             console.error("Failed to send request", error);
+            // Optionally revert logical deletion here if needed, but for MVP just log error
         }
     }
 
