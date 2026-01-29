@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Dialog,
     AppBar,
@@ -32,6 +32,7 @@ import LanguageIcon from '@mui/icons-material/Language';
 import CakeIcon from '@mui/icons-material/Cake';
 import PlaceIcon from '@mui/icons-material/Place';
 import WorkIcon from '@mui/icons-material/Work';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 
 import useAuth from '../../auth/useAuth';
 import postApi from '../../../api/postApi';
@@ -53,6 +54,8 @@ const ProfileDialog = ({ open, onClose, user }) => {
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({});
     const [displayUser, setDisplayUser] = useState(user); // State for the user being displayed, allowing updates from API
+    const fileInputRef = useRef(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
 
     // Initialize form data when user opens dialog
     // Initialize data when user prop changes
@@ -205,6 +208,47 @@ const ProfileDialog = ({ open, onClose, user }) => {
 
     // Let's use `localUser` state.
 
+    const handleImageClick = () => {
+        if (isOwnProfile && !isEditing) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleImageChange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await userApi.uploadProfileImage(formData);
+            if (response.data && response.data.data) {
+                // Update the displayed user with the new image URL
+                // The API returns the image URL in response.data.data (ApiResponse<String>)
+                const newImageUrl = response.data.data;
+                setDisplayUser(prev => ({
+                    ...prev,
+                    profileImage: newImageUrl
+                }));
+
+                // Also update local auth context if it's the own profile
+                if (isOwnProfile) {
+                    updateUser({
+                        ...currentUser,
+                        profileImage: newImageUrl
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Failed to upload profile image:", error);
+            alert("Failed to upload image.");
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
         if (!isEditing) {
@@ -280,10 +324,44 @@ const ProfileDialog = ({ open, onClose, user }) => {
                         {/* Left Column */}
                         <Grid item xs={12} md={4} lg={3}>
                             <Box sx={{ position: 'relative', top: -80, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Avatar
-                                    src={renderUser.profileImage}
-                                    sx={{ width: 160, height: 160, border: '6px solid white', boxShadow: theme.shadows[3], bgcolor: 'white' }}
-                                />
+                                <Box sx={{ position: 'relative' }}>
+                                    <Avatar
+                                        src={renderUser.profileImage}
+                                        sx={{
+                                            width: 160,
+                                            height: 160,
+                                            border: '6px solid white',
+                                            boxShadow: theme.shadows[3],
+                                            bgcolor: 'white'
+                                        }}
+                                    />
+                                    {isOwnProfile && !isEditing && (
+                                        <>
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                style={{ display: 'none' }}
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                            />
+                                            <IconButton
+                                                sx={{
+                                                    position: 'absolute',
+                                                    bottom: 10,
+                                                    right: 10,
+                                                    bgcolor: 'primary.main',
+                                                    color: 'white',
+                                                    '&:hover': { bgcolor: 'primary.dark' },
+                                                    boxShadow: 2
+                                                }}
+                                                onClick={handleImageClick}
+                                                disabled={uploadingImage}
+                                            >
+                                                <CameraAltIcon />
+                                            </IconButton>
+                                        </>
+                                    )}
+                                </Box>
 
                                 <Box sx={{ mt: 2, textAlign: 'center', width: '100%' }}>
                                     {isEditing ? (
