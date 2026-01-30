@@ -9,18 +9,16 @@ import {
     Box,
     Button,
     IconButton,
-    InputAdornment,
-    Stack,
-    Divider
+    Stack
 } from '@mui/material';
 import {
     Image as ImageIcon,
     Event as EventIcon,
-    Article as ArticleIcon,
-    Send as SendIcon
+    Article as ArticleIcon
 } from '@mui/icons-material';
 import Post from './Post';
 import Filepost from './Filepost';
+import FeedPost from './FeedPost';
 import usePosts from '../usePosts';
 
 import { motion } from 'framer-motion';
@@ -29,9 +27,9 @@ import ProfileDialog from '../../profile/components/ProfileDialog'; // Import Pr
 import { useState } from 'react';
 
 function Middle({ userData }) {
-    const postRef = useRef(null);
     const filePostRef = useRef(null);
     const { posts, loading, hasMore, loadMore } = usePosts();
+    const [postOpen, setPostOpen] = useState(false);
 
     // State for managing Profile Dialog
     const [selectedUser, setSelectedUser] = useState(null);
@@ -70,7 +68,7 @@ function Middle({ userData }) {
                         variant="outlined"
                         placeholder="Start a post"
                         size="small"
-                        onClick={() => postRef.current?.click()}
+                        onClick={() => setPostOpen(true)}
                         InputProps={{
                             sx: { borderRadius: 50, cursor: 'pointer' },
                             readOnly: true
@@ -100,61 +98,20 @@ function Middle({ userData }) {
                 </Stack>
                 {/* Hidden Modals Triggers */}
                 <Box sx={{ display: 'none' }}>
-                    <Post ref={postRef} />
                     <Filepost ref={filePostRef} />
                 </Box>
+
+                <Post open={postOpen} onClose={() => setPostOpen(false)} />
             </Card>
 
             {/* Posts Feed */}
             <Stack spacing={2} component={motion.div} layout>
                 {posts.map((post, index) => (
-                    <Card
-                        key={post.postId || post.id || index}
-                        component={motion.div}
-                        layout
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        whileHover={{ scale: 1.02 }}
-                        viewport={{ once: true }}
-                    >
-                        <CardContent sx={{ pb: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                <Avatar
-                                    src={post.profile_image}
-                                    sx={{ width: 48, height: 48, mr: 2, cursor: 'pointer' }}
-                                    onClick={() => handleProfileClick(post)}
-                                />
-                                <Box>
-                                    <Typography
-                                        variant="subtitle1"
-                                        fontWeight="bold"
-                                        sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                                        onClick={() => handleProfileClick(post)}
-                                    >
-                                        {post.username}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {post.designation}
-                                    </Typography>
-                                </Box>
-                            </Box>
-
-                            <Typography variant="body1" sx={{ mb: 2 }}>
-                                {post.textPost}
-                            </Typography>
-                        </CardContent>
-
-                        {post.filePost && (
-                            <CardMedia
-                                component="img"
-                                image={post.filePost}
-                                alt="Post content"
-                                sx={{ maxHeight: 500, objectFit: 'contain', bgcolor: 'black' }}
-                            />
-                        )}
-                        {/* Add interaction buttons here (Like, Comment, Share) if desired */}
-                    </Card>
+                    <FeedPost
+                        key={post.id || index}
+                        post={post}
+                        onProfileClick={handleProfileClick}
+                    />
                 ))}
             </Stack>
 

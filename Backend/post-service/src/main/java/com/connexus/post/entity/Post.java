@@ -10,14 +10,15 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@AttributeOverride(name="id",column = @Column(name="post_id"))
+@AttributeOverride(name = "id", column = @Column(name = "post_id"))
 @Table(name = "posts")
-public class Post extends BaseEntity{
+public class Post extends BaseEntity {
 
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Lob
+    @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String description;
 
     @Column(nullable = false)

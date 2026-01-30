@@ -4,8 +4,12 @@ const postApi = {
     getAllPosts: (params) => {
         return axiosInstance.get('/posts', { params });
     },
-    createPost: (postData) => {
-        return axiosInstance.post('/posts', postData);
+    createPost: (formData) => {
+        return axiosInstance.post('/posts', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data' // Important for file upload
+            }
+        });
     },
     getPostsByUser: (userId) => {
         return axiosInstance.get(`/posts/users/${userId}/allPosts`);

@@ -1,73 +1,174 @@
-import { Button, TextField } from '@mui/material';
-import React, { forwardRef, useState } from 'react'
-import Modal from 'react-modal';
+import React, { useState } from 'react';
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    Button,
+    IconButton,
+    Box,
+    Typography,
+    Avatar,
+    Stack,
+    CircularProgress
+} from '@mui/material';
+import {
+    Close as CloseIcon,
+    Image as ImageIcon,
+    Delete as DeleteIcon
+} from '@mui/icons-material';
+import postApi from '../../../api/postApi';
+import useAuth from '../../auth/useAuth';
 
-const customStyles = {
-    content: {
-        top: '50%',
-        left: '50%',
-        right: 'auto',
-        bottom: 'auto',
-        marginRight: '-50%',
-        transform: 'translate(-50%, -50%)',
-    },
-};
+const Post = ({ open, onClose, onPostCreated }) => {
+    const { user } = useAuth();
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-function Post(props, ref) {
-    let subtitle;
-    const [modalIsOpen, setIsOpen] = React.useState(false);
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
 
-    function openModal() {
-        setIsOpen(true);
-    }
+    const handleRemoveImage = () => {
+        setSelectedImage(null);
+        setPreviewUrl(null);
+    };
 
-    function afterOpenModal() {
-        if (subtitle) subtitle.style.color = 'grey';
-    }
+    const handleSubmit = async () => {
+        if (!title.trim() && !description.trim()) {
+            // Basic validation
+            return;
+        }
 
-    function closeModal() {
-        setIsOpen(false);
-    }
+        setLoading(true);
+        try {
+            const postDto = {
+                title: title,
+                description: description
+            };
 
-    const [text, setText] = useState("")
+            const formData = new FormData();
+            formData.append('post', JSON.stringify(postDto));
+            if (selectedImage) {
+                formData.append('media', selectedImage);
+            }
 
-    const addPost = () => {
-        // Mock functionality: Just close the modal
-        // In a real mock app, we could update the 'posts' state in a parent component, 
-        // but for now we just want to avoid errors.
-        console.log("Post created:", text);
-        setText("");
-        closeModal();
-    }
+            const response = await postApi.createPost(formData);
+            console.log("Post Created:", response.data);
 
+            if (onPostCreated) {
+                onPostCreated(response.data);
+            }
+
+            handleClose();
+        } catch (error) {
+            console.error("Failed to create post", error);
+            // Optionally show error toast
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleClose = () => {
+        setTitle("");
+        setDescription("");
+        handleRemoveImage();
+        onClose();
+    };
 
     return (
-        <div>
-            <button ref={ref} onClick={openModal} style={{ display: "none" }}>Open Modal</button>
-            <Modal
-                isOpen={modalIsOpen}
-                onAfterOpen={afterOpenModal}
-                onRequestClose={closeModal}
-                style={customStyles}
-                contentLabel="Example Modal"
-                ariaHideApp={false}
-            >
-                <h2 ref={(_subtitle) => (subtitle = _subtitle)}>What do you want to talk about?</h2>
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+            <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="h6" component="div">Create a Post</Typography>
+                <IconButton
+                    aria-label="close"
+                    onClick={handleClose}
+                    sx={{
+                        color: (theme) => theme.palette.grey[500],
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Avatar src={user?.profile_image} sx={{ mr: 2 }} />
+                    <Typography fontWeight="bold">{user?.username || "User"}</Typography>
+                </Box>
+
                 <TextField
-                    onChange={(e) => setText(e.target.value)}
-                    sx={{ width: "500px" }}
-                    id="outlined-multiline-static"
-                    label="Type here..."
+                    fullWidth
+                    label="Post Title"
+                    variant="outlined"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+
+                <TextField
+                    fullWidth
+                    label="What do you want to talk about?"
                     multiline
                     rows={4}
-                    value={text}
+                    variant="outlined"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    sx={{ mb: 2 }}
                 />
-                <br />
-                <Button sx={{ mt: "10px" }} variant='outlined' size='small' onClick={closeModal}>Cancel</Button>
-                <Button sx={{ ml: "10px", mt: "10px" }} variant='contained' size='small' onClick={addPost}>Done</Button>
-            </Modal>
-        </div>
-    );
-}
 
-export default forwardRef(Post)
+                {previewUrl && (
+                    <Box sx={{ position: 'relative', mb: 2, borderRadius: 2, overflow: 'hidden', border: '1px solid #ddd' }}>
+                        <img src={previewUrl} alt="Selected" style={{ width: '100%', display: 'block' }} />
+                        <IconButton
+                            sx={{ position: 'absolute', top: 5, right: 5, bgcolor: 'rgba(255,255,255,0.8)' }}
+                            onClick={handleRemoveImage}
+                            size="small"
+                        >
+                            <DeleteIcon />
+                        </IconButton>
+                    </Box>
+                )}
+
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <input
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        id="icon-button-file"
+                        type="file"
+                        onChange={handleImageChange}
+                    />
+                    <label htmlFor="icon-button-file">
+                        <IconButton color="primary" aria-label="upload picture" component="span">
+                            <ImageIcon />
+                        </IconButton>
+                    </label>
+                    <Typography variant="body2" color="text.secondary">Add Media</Typography>
+                </Stack>
+
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+                <Button onClick={handleClose} color="inherit">
+                    Cancel
+                </Button>
+                <Button
+                    onClick={handleSubmit}
+                    variant="contained"
+                    disabled={loading || (!title && !description && !selectedImage)}
+                    startIcon={loading && <CircularProgress size={20} color="inherit" />}
+                >
+                    {loading ? "Posting..." : "Post"}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
+
+export default Post;

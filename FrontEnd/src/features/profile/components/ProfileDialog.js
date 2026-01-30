@@ -67,9 +67,10 @@ const ProfileDialog = ({ open, onClose, user }) => {
             // Using a simple check: if we are viewing another user, let's fetch their latest data.
             // Or always fetch to ensure we have details like 'about', 'skills', etc. which might be missing in 'user' prop from feed.
             const fetchFullProfile = async () => {
-                if (renderUser.id) {
+                const targetId = user?.id || user?.user_id || user?.userId;
+                if (targetId) {
                     try {
-                        const response = await userApi.getProfile(renderUser.id);
+                        const response = await userApi.getProfile(targetId);
                         if (response.data && response.data.data) {
                             setDisplayUser(response.data.data);
                         } else if (response.data) {
@@ -107,9 +108,10 @@ const ProfileDialog = ({ open, onClose, user }) => {
     useEffect(() => {
 
         const fetchUserPosts = async () => {
-            if (user && renderUser.id) {
+            const targetId = user?.id || user?.user_id || user?.userId;
+            if (user && targetId) {
                 try {
-                    const response = await postApi.getPostsByUser(renderUser.id);
+                    const response = await postApi.getPostsByUser(targetId);
                     if (response.data && Array.isArray(response.data.data)) {
                         setUserPosts(response.data.data);
                     } else if (Array.isArray(response.data)) {
@@ -134,8 +136,10 @@ const ProfileDialog = ({ open, onClose, user }) => {
 
     const isOwnProfile = currentUser && String(currentUserId) === String(profileUserId);
 
-    // Use displayUser for rendering instead of user prop
-    const renderUser = displayUser || user;
+    // Use displayUser for rendering only if it matches the requested user prop
+    // This prevents showing stale data from a previous open
+    const isDisplayUserCurrent = displayUser && (String(displayUser.id) === String(profileUserId) || String(displayUser.userId) === String(profileUserId) || String(displayUser.user_id) === String(profileUserId));
+    const renderUser = isDisplayUserCurrent ? displayUser : user;
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

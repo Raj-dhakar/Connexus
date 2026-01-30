@@ -79,8 +79,11 @@ const usePosts = () => {
                     username: author.username || author.firstName || `User ${post.userId}`,
                     designation: author.designation || 'Member',
                     profile_image: author.profileImage,
-                    textPost: post.description || post.title,
-                    filePost: null
+                    title: post.title,
+                    description: post.description,
+                    mediaUrl: post.mediaUrl,
+                    textPost: post.description || post.title, // Fallback/Compat
+                    filePost: post.mediaUrl // Map mediaUrl to filePost for existing compatibility
                 };
             });
 
