@@ -15,8 +15,7 @@ import {
     Skeleton,
     Menu,
     MenuItem,
-    ListItemIcon,
-    Tooltip
+    ListItemIcon
 } from '@mui/material';
 import {
     Send as SendIcon,
@@ -25,7 +24,8 @@ import {
     Delete as DeleteIcon,
     Reply as ReplyIcon,
     ContentCopy as CopyIcon,
-    Close as CloseIcon
+    Close as CloseIcon,
+    AddReaction as AddReactionIcon
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import useAuth from '../auth/useAuth';
@@ -54,15 +54,23 @@ function Message() {
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [replyingTo, setReplyingTo] = useState(null);
     const [editingMessage, setEditingMessage] = useState(null);
+    const [reactionMenu, setReactionMenu] = useState(null); // { anchorEl, message }
+
+    const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "😡"];
 
     // Refs
     const messagesEndRef = useRef(null);
     const activeChatUserRef = useRef(activeChatUser);
+    const messagesStateRef = useRef(messages);
 
     // Update Ref whenever state changes
     useEffect(() => {
         activeChatUserRef.current = activeChatUser;
     }, [activeChatUser]);
+
+    useEffect(() => {
+        messagesStateRef.current = messages;
+    }, [messages]);
 
     // Scroll to bottom
     const scrollToBottom = () => {
@@ -134,14 +142,49 @@ function Message() {
         // Disable debug logs if too noisy
         client.debug = () => { };
 
+        const onMessageReceived = (payload) => {
+            const newMessage = JSON.parse(payload.body);
+            const myId = currentUser.id || currentUser.user_id || currentUser.userId;
+
+            const currentActive = activeChatUserRef.current;
+            const activeId = currentActive?.userId || activeChatUserRef.current?.id;
+
+            const isFromActiveUser = activeId && (String(newMessage.senderId) === String(activeId));
+            const isEchoToActiveUser = activeId && (String(newMessage.senderId) === String(myId)) && (String(newMessage.recipientId) === String(activeId));
+
+            setMessages(prev => {
+                const existingIndex = prev.findIndex(m => m.id === newMessage.id);
+                if (existingIndex !== -1) {
+                    // Update existing message (Edit or Delete)
+                    const updated = [...prev];
+                    updated[existingIndex] = newMessage;
+                    return updated;
+                } else {
+                    // New Message
+                    if (isFromActiveUser || isEchoToActiveUser) {
+                        return [...prev, newMessage];
+                    }
+                    return prev;
+                }
+            });
+
+            if (!isEchoToActiveUser && !isFromActiveUser) {
+                const senderId = newMessage.senderId;
+                // Check using Ref to avoid dependency loop
+                if (messagesStateRef.current && !messagesStateRef.current.some(m => m.id === newMessage.id)) {
+                    setUnreadCounts(prev => ({
+                        ...prev,
+                        [senderId]: (prev[senderId] || 0) + 1
+                    }));
+                }
+            }
+        };
+
         client.connect({}, () => {
             console.log("Connected to WebSocket");
             setIsConnected(true);
             const myId = currentUser.id || currentUser.user_id || currentUser.userId;
-            client.subscribe(`/queue/messages/${myId}`, (payload) => {
-                const newMessage = JSON.parse(payload.body);
-                handleIncomingMessage(newMessage, myId);
-            });
+            client.subscribe(`/queue/messages/${myId}`, onMessageReceived);
         }, (err) => {
             console.error("WebSocket connection error:", err);
             setIsConnected(false);
@@ -160,48 +203,6 @@ function Message() {
             setIsConnected(false);
         };
     }, [currentUser]);
-
-    const handleIncomingMessage = (newMessage, myId) => {
-        const currentActive = activeChatUserRef.current;
-        const activeId = currentActive?.userId || currentActive?.id;
-
-        const isFromActiveUser = activeId && (String(newMessage.senderId) === String(activeId));
-        const isEchoToActiveUser = activeId && (String(newMessage.senderId) === String(myId)) && (String(newMessage.recipientId) === String(activeId));
-
-        setMessages(prev => {
-            const existingIndex = prev.findIndex(m => m.id === newMessage.id);
-            if (existingIndex !== -1) {
-                // Update existing message (Edit or Delete)
-                const updated = [...prev];
-                updated[existingIndex] = newMessage;
-                return updated;
-            } else {
-                // New Message
-                if (isFromActiveUser || isEchoToActiveUser) {
-                    return [...prev, newMessage];
-                }
-                return prev;
-            }
-        });
-
-        if (!isEchoToActiveUser && !isFromActiveUser) {
-            // Increment unread if not visible
-            const senderId = newMessage.senderId;
-            // Only increment if it's a NEW message, not an update
-            // We assume updates don't trigger unread counts usually, or we check if id existed? 
-            // Ideally we check if it was an update. 
-            // But for now, simple logic:
-            if (!messages.some(m => m.id === newMessage.id)) { // This check relies on state which is stale in callback?
-                // Use functional update for reliable check or assume new messages have unique IDs.
-                // Ideally backend sends type of event.
-                // For now, let's keep it simple.
-                setUnreadCounts(prev => ({
-                    ...prev,
-                    [senderId]: (prev[senderId] || 0) + 1
-                }));
-            }
-        }
-    };
 
     // 3. Fetch History on Active User Change
     useEffect(() => {
@@ -261,6 +262,45 @@ function Message() {
         setContextMenu(null);
     };
 
+    const handleReactionClick = (event) => {
+        // Switch from main context menu to reaction menu
+        const anchorEl = event.currentTarget; // or use context menu position?
+        // Actually, let's just close context menu and open reaction menu at the same position or center?
+        // Simplest: Open reaction menu at the location of the context menu click
+        setContextMenu(null);
+        setReactionMenu({
+            mouseX: contextMenu.mouseX,
+            mouseY: contextMenu.mouseY,
+            message: selectedMessage
+        });
+    };
+
+    const handleCloseReactionMenu = () => {
+        setReactionMenu(null);
+    };
+
+    const handleReactionSelect = (emoji) => {
+        const msg = reactionMenu.message;
+        const myId = currentUser.id || currentUser.user_id || currentUser.userId;
+
+        handleCloseReactionMenu();
+
+        if (msg) {
+            messagingApi.reactToMessage(msg.id, myId, emoji)
+                .catch(err => console.error("Failed to react", err));
+        }
+    };
+
+    const handleEmojiDoubleClick = (msg, emoji) => {
+        const myId = currentUser.id || currentUser.user_id || currentUser.userId;
+        // Backend toggles if same reaction exists, so just sending it again removes it.
+        // We logic check: if the user actually HAS this reaction, send it to remove.
+        // If they don't have it, sending it adds it (which is also fine behavior for interaction, but strictly "remove" requested).
+        // Let's just call the endpoint, behaving as a toggle.
+        messagingApi.reactToMessage(msg.id, myId, emoji)
+            .catch(err => console.error("Failed to remove reaction", err));
+    };
+
     const handleAction = (action) => {
         const msg = selectedMessage;
         handleCloseContextMenu();
@@ -285,6 +325,9 @@ function Message() {
                     messagingApi.deleteMessage(msg.id)
                         .catch(err => console.error("Failed to delete", err));
                 }
+                break;
+            case 'react':
+                // Handled specifically in MenuItem, but good to have safety
                 break;
             default:
                 break;
@@ -476,6 +519,41 @@ function Message() {
                                                                     {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
                                                                     {msg.edited && !isDeleted && " (edited)"}
                                                                 </Typography>
+
+                                                                {/* Reactions Display */}
+                                                                {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        gap: 0.5,
+                                                                        position: 'absolute',
+                                                                        bottom: -15, // Adjusted to hang slightly lower
+                                                                        right: isMe ? 0 : 'auto', // Align with edge
+                                                                        left: isMe ? 'auto' : 0,
+                                                                        px: 0.5,
+                                                                        py: 0,
+                                                                        zIndex: 1,
+                                                                        // Removed background, shadow, border
+                                                                    }}>
+                                                                        {Array.from(new Set(Object.values(msg.reactions))).map((emoji, idx) => (
+                                                                            <Typography
+                                                                                key={idx}
+                                                                                variant="caption"
+                                                                                sx={{ fontSize: '1.2rem', lineHeight: 1, cursor: 'pointer', userSelect: 'none' }}
+                                                                                onDoubleClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleEmojiDoubleClick(msg, emoji);
+                                                                                }}
+                                                                            >
+                                                                                {emoji}
+                                                                            </Typography>
+                                                                        ))}
+                                                                        {(Object.keys(msg.reactions).length > 1) && (
+                                                                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', ml: 0.5, alignSelf: 'center', textShadow: '0 0 2px white' }}>
+                                                                                {Object.keys(msg.reactions).length}
+                                                                            </Typography>
+                                                                        )}
+                                                                    </Box>
+                                                                )}
                                                             </Paper>
                                                         </Box>
                                                     );
@@ -564,6 +642,30 @@ function Message() {
                         Delete
                     </MenuItem>
                 )}
+                <MenuItem onClick={handleReactionClick}>
+                    <ListItemIcon><AddReactionIcon fontSize="small" /></ListItemIcon>
+                    React...
+                </MenuItem>
+            </Menu>
+
+            {/* Reaction Menu */}
+            <Menu
+                open={reactionMenu !== null}
+                onClose={handleCloseReactionMenu}
+                anchorReference="anchorPosition"
+                anchorPosition={
+                    reactionMenu !== null
+                        ? { top: reactionMenu.mouseY, left: reactionMenu.mouseX }
+                        : undefined
+                }
+            >
+                <div style={{ padding: '0 8px', display: 'flex' }}>
+                    {REACTION_EMOJIS.map((emoji) => (
+                        <IconButton key={emoji} onClick={() => handleReactionSelect(emoji)} size="small">
+                            <span style={{ fontSize: '1.2rem' }}>{emoji}</span>
+                        </IconButton>
+                    ))}
+                </div>
             </Menu>
         </Box >
     );

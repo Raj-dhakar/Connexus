@@ -6,10 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="22073f7d-dbeb-4a6a-aade-6ff1c245d893" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messaging-service/src/main/java/com/connexus/messaging/controller/ChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/messaging-service/src/main/java/com/connexus/messaging/controller/ChatController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messaging-service/src/main/java/com/connexus/messaging/model/Message.java" beforeDir="false" afterPath="$PROJECT_DIR$/messaging-service/src/main/java/com/connexus/messaging/model/Message.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messaging-service/src/main/java/com/connexus/messaging/model/MessageStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/messaging-service/src/main/java/com/connexus/messaging/model/MessageStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/api/messagingApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/api/messagingApi.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/messaging/Message.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/messaging/Message.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -236,7 +232,7 @@
       <workItem from="1769673528954" duration="6570000" />
       <workItem from="1769687106875" duration="10460000" />
       <workItem from="1769714372588" duration="4171000" />
-      <workItem from="1769719578529" duration="5285000" />
+      <workItem from="1769719578529" duration="6556000" />
     </task>
     <servers />
   </component>
