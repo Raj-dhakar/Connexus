@@ -20,6 +20,7 @@ import {
     People as PeopleIcon,
     Message as MessageIcon,
     Logout as LogoutIcon,
+    Article as ArticleIcon,
     Menu as MenuIcon,
     Notifications as NotificationsIcon
 } from '@mui/icons-material';
@@ -64,6 +65,7 @@ function Navbar({ userData }) {
         { label: 'Home', icon: <HomeIcon />, path: '/main' },
         { label: 'Network', icon: <PeopleIcon />, path: '/network', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
         { label: 'Messaging', icon: <MessageIcon />, path: '/message', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
+        { label: 'All Posts', icon: <ArticleIcon />, path: '/my-posts', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
     ];
 
     return (

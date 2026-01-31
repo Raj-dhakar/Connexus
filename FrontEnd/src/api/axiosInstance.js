@@ -13,7 +13,9 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = Cookies.get('token'); // Retrieve from cookie
-        if (token) {
+
+        // Exclude /auth/ endpoints from having the Authorization header attached
+        if (token && !config.url.startsWith('/auth/')) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
         return config;

@@ -12,6 +12,7 @@ import Network from './features/network/Network';
 import Message from './features/messaging/Message';
 import RecruiterDashboard from './features/recruiter/RecruiterDashboard';
 import TestProfile from './features/profile/components/TestProfile';
+import UserPosts from './features/posts/components/UserPosts';
 import { AnimatePresence } from 'framer-motion';
 
 import { ToastContainer } from 'react-toastify';
@@ -37,6 +38,7 @@ function App() {
               <Route path="/invite" element={<Invitation />} />
               <Route path="/network" element={<Network />} />
               <Route path='/message' element={<Message />} />
+              <Route path='/my-posts' element={<UserPosts />} />
               <Route path='/recruiter/dashboard' element={<RecruiterDashboard />} />
               <Route path='/test-profile' element={<TestProfile />} />
             </Routes>
