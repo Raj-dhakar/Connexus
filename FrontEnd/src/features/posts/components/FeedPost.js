@@ -22,18 +22,23 @@ import {
 import {
     ThumbUpAlt as LikeIcon,
     ThumbUpOffAlt as LikeOutlinedIcon,
+    Favorite as HeartIcon,
     Share as ShareIcon,
     MoreVert as MoreVertIcon,
     Edit as EditIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-toastify';
+import postApi from '../../../api/postApi';
 
 const FeedPost = ({ post, onProfileClick, onUpdate, onDelete, onUpdateMedia }) => {
     const [expanded, setExpanded] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [previewOpen, setPreviewOpen] = useState(false);
-    const [liked, setLiked] = useState(false);
+    const [liked, setLiked] = useState(post.liked || false);
+    const [likeCount, setLikeCount] = useState(post.likeCount || 0);
+    const [showHeart, setShowHeart] = useState(false);
 
     // Menu & Edit State
     const [anchorEl, setAnchorEl] = useState(null);
@@ -77,7 +82,39 @@ const FeedPost = ({ post, onProfileClick, onUpdate, onDelete, onUpdateMedia }) =
     };
 
     const toggleExpanded = () => setExpanded(!expanded);
-    const handleLike = () => setLiked(!liked);
+
+    const handleLikeToggle = async () => {
+        const originalLiked = liked;
+        const originalCount = likeCount;
+
+        // Optimistic UI update
+        setLiked(!originalLiked);
+        setLikeCount(prev => originalLiked ? prev - 1 : prev + 1);
+
+        if (!originalLiked) {
+            setShowHeart(true);
+            setTimeout(() => setShowHeart(false), 1000);
+        }
+
+        try {
+            if (originalLiked) {
+                const response = await postApi.unlikePost(post.postId || post.id);
+                const message = response.data?.data || response.data?.message || "Post unliked";
+                toast.success(message);
+            } else {
+                const response = await postApi.likePost(post.postId || post.id);
+                const message = response.data?.data || response.data?.message || "Post liked";
+                toast.success(message);
+            }
+        } catch (error) {
+            // Revert on error
+            setLiked(originalLiked);
+            setLikeCount(originalCount);
+            console.error("Like toggle failed", error);
+            const errorMessage = error.response?.data?.error || "Action failed";
+            toast.error(errorMessage);
+        }
+    };
 
     const DESCRIPTION_LIMIT = 150;
     const shouldTruncate = post.description && post.description.length > DESCRIPTION_LIMIT;
@@ -94,7 +131,7 @@ const FeedPost = ({ post, onProfileClick, onUpdate, onDelete, onUpdateMedia }) =
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 whileHover={{ scale: 1.01 }}
-                sx={{ mb: 2, borderRadius: 3, boxShadow: 3 }}
+                sx={{ mb: 2, borderRadius: 3, boxShadow: 3, position: 'relative' }}
             >
                 <CardContent sx={{ pb: 1 }}>
                     {/* Header */}
@@ -190,12 +227,41 @@ const FeedPost = ({ post, onProfileClick, onUpdate, onDelete, onUpdateMedia }) =
                     </Box>
                 )}
 
+                {/* Heart Animation Overlay */}
+                <AnimatePresence>
+                    {showHeart && (
+                        <Box
+                            component={motion.div}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 0] }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 10,
+                                pointerEvents: 'none'
+                            }}
+                        >
+                            <HeartIcon sx={{ fontSize: 100, color: '#e91e63' }} />
+                        </Box>
+                    )}
+                </AnimatePresence>
+
                 {/* Actions */}
                 <CardActions disableSpacing sx={{ borderTop: 1, borderColor: 'divider', px: 2 }}>
-                    <IconButton onClick={handleLike} color={liked ? "primary" : "default"}>
+                    <IconButton onClick={handleLikeToggle} sx={{ color: liked ? "#e91e63" : "inherit" }}>
                         {liked ? <LikeIcon /> : <LikeOutlinedIcon />}
                     </IconButton>
-                    <Typography variant="body2" color="text.secondary">Like</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {likeCount > 0 ? `${likeCount} ${likeCount === 1 ? 'Like' : 'Likes'}` : 'Like'}
+                    </Typography>
 
                     <Box sx={{ flexGrow: 1 }} />
 

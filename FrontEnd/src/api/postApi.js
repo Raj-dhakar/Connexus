@@ -26,6 +26,12 @@ const postApi = {
                 'Content-Type': 'multipart/form-data'
             }
         });
+    },
+    likePost: (postId) => {
+        return axiosInstance.post(`/likes/${postId}`);
+    },
+    unlikePost: (postId) => {
+        return axiosInstance.delete(`/likes/${postId}`);
     }
 };
 

@@ -13,4 +13,6 @@ public class PostDto {
     private String description;
     private Long userId;
     private String mediaUrl;
+    private long likeCount;
+    private boolean isLiked;
 }

@@ -82,6 +82,8 @@ const usePosts = () => {
                     title: post.title,
                     description: post.description,
                     mediaUrl: post.mediaUrl,
+                    likeCount: post.likeCount || 0,
+                    liked: post.liked || false,
                     textPost: post.description || post.title, // Fallback/Compat
                     filePost: post.mediaUrl // Map mediaUrl to filePost for existing compatibility
                 };

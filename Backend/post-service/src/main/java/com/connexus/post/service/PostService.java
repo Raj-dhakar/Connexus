@@ -8,6 +8,7 @@ import com.connexus.post.dto.PostDto;
 import com.connexus.post.entity.Post;
 import com.connexus.post.event.PostCreatedEvent;
 import com.connexus.post.exception.ResourceNotFoundException;
+import com.connexus.post.repository.PostLikeRepository;
 import com.connexus.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
     private final ModelMapper modelMapper;
     private final ConnectionsClient connectionClient;
     // private final KafkaTemplate<Long, PostCreatedEvent> kafkaTemplate;
@@ -66,7 +68,17 @@ public class PostService {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
-        return modelMapper.map(post, PostDto.class);
+        PostDto postDto = modelMapper.map(post, PostDto.class);
+        return enrichPostDto(postDto);
+    }
+
+    private PostDto enrichPostDto(PostDto postDto) {
+        Long currentUserId = UserContextHolder.getCurrentUserId();
+        postDto.setLikeCount(postLikeRepository.countByPostId(postDto.getPostId()));
+        if (currentUserId != null) {
+            postDto.setLiked(postLikeRepository.existsByUserIdAndPostId(currentUserId, postDto.getPostId()));
+        }
+        return postDto;
     }
 
     public List<PostDto> getAllPostsOfUser(Long userId) {
@@ -74,7 +86,10 @@ public class PostService {
 
         return posts
                 .stream()
-                .map((element) -> modelMapper.map(element, PostDto.class))
+                .map((element) -> {
+                    PostDto postDto = modelMapper.map(element, PostDto.class);
+                    return enrichPostDto(postDto);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -82,7 +97,10 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdOn").descending());
         Page<Post> posts = postRepository.findAll(pageable);
 
-        return posts.map(element -> modelMapper.map(element, PostDto.class));
+        return posts.map(element -> {
+            PostDto postDto = modelMapper.map(element, PostDto.class);
+            return enrichPostDto(postDto);
+        });
     }
 
     public List<PostDto> getAllPost() {
@@ -90,7 +108,10 @@ public class PostService {
 
         return posts
                 .stream()
-                .map((element) -> modelMapper.map(element, PostDto.class))
+                .map((element) -> {
+                    PostDto postDto = modelMapper.map(element, PostDto.class);
+                    return enrichPostDto(postDto);
+                })
                 .collect(Collectors.toList());
     }
 
