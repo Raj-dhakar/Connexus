@@ -89,10 +89,12 @@ function Signin() {
 
                     toast.success("Welcome back to the future!");
 
-                    if (userData.role === "ROLE_USER") {
-                        navigate("/main");
-                    } else {
+                    if (userData.role === "ROLE_ADMIN") {
+                        navigate("/admin/dashboard");
+                    } else if (userData.role === "ROLE_RECRUITER") {
                         navigate("/recruiter/dashboard");
+                    } else {
+                        navigate("/main");
                     }
                 } else {
                     toast.error("Failed to fetch user profile.");

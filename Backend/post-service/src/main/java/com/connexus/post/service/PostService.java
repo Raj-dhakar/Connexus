@@ -115,10 +115,11 @@ public class PostService {
 
     public void deletePost(Long postId) {
         Long userId = UserContextHolder.getCurrentUserId();
+        String userRole = UserContextHolder.getCurrentUserRole();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
 
-        if (!post.getUserId().equals(userId)) {
+        if (!post.getUserId().equals(userId) && !userRole.equals("ROLE_ADMIN")) {
             throw new RuntimeException("Unauthorized access to delete post");
         }
 

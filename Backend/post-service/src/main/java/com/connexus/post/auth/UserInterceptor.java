@@ -12,8 +12,12 @@ public class UserInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         String userId = request.getHeader("X-User-Id");
+        String role = request.getHeader("X-Role");
         if(userId != null) {
             UserContextHolder.setCurrentUserId(Long.valueOf(userId));
+        }
+        if (role != null) {
+            UserContextHolder.setCurrentUserRole(role);
         }
 
         return HandlerInterceptor.super.preHandle(request, response, handler);

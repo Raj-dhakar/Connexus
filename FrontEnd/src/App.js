@@ -13,6 +13,9 @@ import Message from './features/messaging/Message';
 import RecruiterDashboard from './features/recruiter/RecruiterDashboard';
 import TestProfile from './features/profile/components/TestProfile';
 import UserPosts from './features/posts/components/UserPosts';
+import AdminDashboard from './features/admin/AdminDashboard';
+import UserManagement from './features/admin/UserManagement';
+import ContentModeration from './features/admin/ContentModeration';
 import { AnimatePresence } from 'framer-motion';
 
 import { ToastContainer } from 'react-toastify';
@@ -41,6 +44,12 @@ function App() {
               <Route path='/my-posts' element={<UserPosts />} />
               <Route path='/recruiter/dashboard' element={<RecruiterDashboard />} />
               <Route path='/test-profile' element={<TestProfile />} />
+
+              {/* Admin Routes */}
+              <Route path='/admin/dashboard' element={<AdminDashboard />} />
+              <Route path='/admin/users' element={<UserManagement />} />
+              <Route path='/admin/recruiters' element={<UserManagement />} /> {/* Reusing UserManagement for now */}
+              <Route path='/admin/moderation' element={<ContentModeration />} />
             </Routes>
           </AnimatePresence>
         </AuthProvider>
