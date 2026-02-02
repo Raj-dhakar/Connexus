@@ -35,6 +35,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import ProfileDialog from '../profile/components/ProfileDialog';
 import Navbar from '../layout/Navbar';
+import { toast } from 'react-toastify';
 
 function RecruiterDashboard() {
     const [users, setUsers] = useState([]);
@@ -162,6 +163,16 @@ function RecruiterDashboard() {
     const handleViewProfile = (candidate) => {
         setSelectedUser(candidate);
         setProfileOpen(true);
+    };
+
+    const handleContactUser = async (candidate) => {
+        try {
+            await userApi.sendRecruiterEmail(candidate.id || candidate.userId);
+            toast.success(`Email sent to ${candidate.firstName || candidate.username}!`);
+        } catch (error) {
+            console.error("Failed to send email", error);
+            toast.error("Failed to send email. Please try again.");
+        }
     };
 
     const filteredUsers = users.filter(u => {
@@ -447,7 +458,7 @@ function RecruiterDashboard() {
                                                             </IconButton>
                                                         </Tooltip>
                                                         <Tooltip title="Contact">
-                                                            <IconButton size="small"><EmailIcon fontSize="small" /></IconButton>
+                                                            <IconButton size="small" onClick={() => handleContactUser(u)}><EmailIcon fontSize="small" /></IconButton>
                                                         </Tooltip>
                                                     </TableCell>
                                                 </TableRow>

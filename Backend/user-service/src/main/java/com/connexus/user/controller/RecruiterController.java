@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 public class RecruiterController {
 
         private final RecruiterService recruiterService;
+        private final com.connexus.user.service.EmailService emailService;
+        private final com.connexus.user.service.UserService userService;
 
         @GetMapping("/{recruiterId}")
         public ResponseEntity<RecruiterDto> getRecruiter(
@@ -36,6 +38,14 @@ public class RecruiterController {
         public ResponseEntity<List<RecruiterDto>> getAllRecruiters() {
                 return ResponseEntity.ok(
                                 recruiterService.getAllRecruiters());
+        }
+
+        @PostMapping("/{userId}/email")
+        public ResponseEntity<com.connexus.user.advices.ApiResponse<String>> sendEmailToCandidate(
+                        @PathVariable Long userId) {
+                // userId here is the CANDIDATE's user ID
+                emailService.sendRecruiterContactEmail(userId);
+                return ResponseEntity.ok(new com.connexus.user.advices.ApiResponse<>("Email sent successfully"));
         }
 
         @PutMapping("/{recruiterId}")

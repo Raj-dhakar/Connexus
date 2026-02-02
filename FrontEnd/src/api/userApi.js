@@ -23,6 +23,9 @@ const userApi = {
     getRecruiterProfile: (userId) => {
         return axiosInstance.get(`/recruiters/user/${userId}`);
     },
+    sendRecruiterEmail: (userId) => {
+        return axiosInstance.post(`/recruiters/${userId}/email`);
+    },
     // Add other user related calls here
 };
 
