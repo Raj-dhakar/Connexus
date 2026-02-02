@@ -6,12 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="22073f7d-dbeb-4a6a-aade-6ff1c245d893" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/auth/UserContextHolder.java" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/auth/UserContextHolder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/auth/UserInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/auth/UserInterceptor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/service/PostService.java" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/service/PostService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/auth/components/Signin.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/auth/components/Signin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/connection-service/src/main/java/com/connexus/connect/advices/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/connection-service/src/main/java/com/connexus/connect/advices/GlobalExceptionHandler.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -256,7 +251,7 @@
       <workItem from="1770046098055" duration="3900000" />
       <workItem from="1770057582906" duration="337000" />
       <workItem from="1770059099668" duration="303000" />
-      <workItem from="1770060231877" duration="2226000" />
+      <workItem from="1770060231877" duration="3963000" />
     </task>
     <servers />
   </component>

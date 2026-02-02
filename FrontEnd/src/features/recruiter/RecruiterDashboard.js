@@ -26,9 +26,11 @@ import {
     Work as WorkIcon,
     TrendingUp as TrendingUpIcon,
     People as PeopleIcon,
-    Search as SearchIcon
+    Search as SearchIcon,
+    PersonAdd as PersonAddIcon
 } from '@mui/icons-material';
 import userApi from '../../api/userApi';
+import connectionApi from '../../api/connectionApi';
 import useAuth from '../auth/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -172,6 +174,23 @@ function RecruiterDashboard() {
         } catch (error) {
             console.error("Failed to send email", error);
             toast.error("Failed to send email. Please try again.");
+        }
+    };
+
+    const handleConnect = async (candidate) => {
+        try {
+            const response = await connectionApi.sendConnectionRequest(candidate.id || candidate.userId);
+            // Use status code and data as success indicator
+            if (response.status === 200 || response.data === true || response.data?.data === true) {
+                const name = candidate.firstName && candidate.lastName
+                    ? `${candidate.firstName} ${candidate.lastName}`
+                    : (candidate.firstName || candidate.username);
+                toast.success(`Connection request sent to ${name}!`);
+            }
+        } catch (error) {
+            console.error("Failed to send connection request", error);
+            const errorMessage = error.response?.data?.error || "Failed to send connection request";
+            toast.error(errorMessage);
         }
     };
 
@@ -411,6 +430,7 @@ function RecruiterDashboard() {
                                             <TableCell>Candidate</TableCell>
                                             <TableCell>Email</TableCell>
                                             <TableCell>Role</TableCell>
+                                            <TableCell align="center">Connect</TableCell>
                                             <TableCell align="right">Action</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -450,6 +470,17 @@ function RecruiterDashboard() {
                                                                 borderRadius: '4px'
                                                             }}
                                                         />
+                                                    </TableCell>
+                                                    <TableCell align="center">
+                                                        <Tooltip title="Connect">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleConnect(u)}
+                                                                sx={{ color: '#00f2fe' }}
+                                                            >
+                                                                <PersonAddIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
                                                     </TableCell>
                                                     <TableCell align="right">
                                                         <Tooltip title="View Profile">
