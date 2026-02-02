@@ -1,4 +1,4 @@
-import { Avatar, Button, List, ListItem, ListItemText, Paper } from '@mui/material'
+import { Avatar, Button, List, ListItem, ListItemText, Paper, Box } from '@mui/material'
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import connectionApi from '../../api/connectionApi'
@@ -56,29 +56,29 @@ function Invitation({ showEmptyMessage = true }) {
     if (requests.length === 0 && !showEmptyMessage) return null;
 
     return (
-        <div style={{ padding: "20px", backgroundColor: "#F6F7F3", marginBottom: "20px" }}>
-            <div style={{ fontWeight: "bold", marginBottom: "10px", color: "#666" }}>Invitations</div>
+        <Box sx={{ p: 3, bgcolor: 'background.default', mb: 3, minHeight: '100vh', color: 'text.primary' }}>
+            <div style={{ fontWeight: "bold", marginBottom: "10px", color: "inherit" }}>Invitations</div>
             {requests.length === 0 ? (
-                <div style={{ textAlign: "center", color: "#888", padding: "10px" }}>No pending invitations</div>
+                <div style={{ textAlign: "center", color: "text.secondary", padding: "10px" }}>No pending invitations</div>
             ) : (
                 requests.map((eachUser) => {
-                    return <Paper key={eachUser.id} sx={{ mb: 2 }}>
+                    return <Paper key={eachUser.id} sx={{ mb: 2, bgcolor: 'background.paper', color: 'text.primary' }}>
                         <List>
                             <ListItem>
                                 <UserAvatar userId={eachUser.userId || eachUser.id} name={eachUser.name} sx={{ bgcolor: 'primary.main' }} />
                                 <ListItemText
                                     primary={eachUser.name || eachUser.username || "Unknown"}
                                     secondary={eachUser.role || eachUser.designation || "Member"}
-                                    sx={{ ml: 2 }}
+                                    sx={{ ml: 2, '& .MuiListItemText-primary': { color: 'text.primary' }, '& .MuiListItemText-secondary': { color: 'text.secondary' } }}
                                 />
-                                <Button onClick={() => deleteReq(eachUser)} sx={{ color: "grey" }} size="small">Ignore</Button>
+                                <Button onClick={() => deleteReq(eachUser)} sx={{ color: "text.secondary" }} size="small">Ignore</Button>
                                 <Button onClick={() => acceptReq(eachUser)} sx={{ ml: "5px" }} variant='outlined' size="small">Accept</Button>
                             </ListItem>
                         </List>
                     </Paper>
                 })
             )}
-        </div>
+        </Box>
     )
 }
 

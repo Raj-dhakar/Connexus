@@ -442,7 +442,7 @@ function Message() {
                                         <Typography variant="h6">{activeChatUser.name || `${activeChatUser.firstName} ${activeChatUser.lastName}`}</Typography>
                                     </Box>
 
-                                    <Box sx={{ flexGrow: 1, p: 2, overflowY: 'auto', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+                                    <Box sx={{ flexGrow: 1, p: 2, overflowY: 'auto', bgcolor: 'transparent', display: 'flex', flexDirection: 'column' }}>
                                         {messages.length === 0 ? (
                                             <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.7 }}>
                                                 <EmptyChatIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2, opacity: 0.5 }} />
@@ -470,7 +470,7 @@ function Message() {
                                                                     minWidth: '120px',
                                                                     background: isMe
                                                                         ? 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
-                                                                        : '#ffffff',
+                                                                        : 'background.paper',
                                                                     color: isMe ? '#fff' : 'text.primary',
                                                                     borderRadius: 2,
                                                                     borderBottomRightRadius: isMe ? 0 : 2,

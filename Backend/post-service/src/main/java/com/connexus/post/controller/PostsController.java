@@ -28,10 +28,8 @@ public class PostsController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostDto> createPost(
             @RequestPart("post") String postJson,
-            @RequestPart(value = "media", required = false) MultipartFile media
-    ) throws JsonProcessingException {
-        PostCreateRequestDto postDto =
-                new ObjectMapper().readValue(postJson, PostCreateRequestDto.class);
+            @RequestPart(value = "media", required = false) MultipartFile media) throws JsonProcessingException {
+        PostCreateRequestDto postDto = new ObjectMapper().readValue(postJson, PostCreateRequestDto.class);
         PostDto createdPost = postsService.createPost(postDto, media);
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
@@ -70,5 +68,25 @@ public class PostsController {
         return ResponseEntity.ok(new ApiResponse(file.getOriginalFilename()));
     }
 
+    @PutMapping("/{postId}")
+    public ResponseEntity<ApiResponse<PostDto>> updatePost(@PathVariable Long postId,
+            @RequestBody PostCreateRequestDto postDto) {
+        PostDto updatedPost = postsService.updatePost(postId, postDto);
+        return ResponseEntity.ok(new ApiResponse<>(updatedPost));
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<ApiResponse<Boolean>> deletePost(@PathVariable Long postId) {
+        postsService.deletePost(postId);
+        return ResponseEntity.ok(new ApiResponse<>(true));
+    }
+
+    @PutMapping(value = "/{postId}/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<PostDto>> updatePostMedia(
+            @PathVariable Long postId,
+            @RequestPart("media") MultipartFile media) {
+        PostDto updatedPost = postsService.updatePostMedia(postId, media);
+        return ResponseEntity.ok(new ApiResponse<>(updatedPost));
+    }
 
 }

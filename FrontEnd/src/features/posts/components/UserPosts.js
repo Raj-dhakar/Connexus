@@ -14,6 +14,8 @@ import Navbar from '../../layout/Navbar';
 import useAuth from '../../auth/useAuth';
 import ProfileDialog from '../../profile/components/ProfileDialog';
 
+import { toast } from 'react-toastify';
+
 function UserPosts() {
     const { user: currentUser } = useAuth();
     const [posts, setPosts] = useState([]);
@@ -30,17 +32,11 @@ function UserPosts() {
 
             try {
                 // Fetch all posts for the current user
-                // Endpoint: /posts/users/{userId}/allPosts
                 const response = await postApi.getPostsByUser(currentUser.id);
-                // response.data is List<PostDto>
-                // Sort by recent first (assuming higher ID is more recent or if there is a date field)
-                // If backend doesn't sort, we can sort here. Generally ID sort is safe proxy for time if auto-increment.
-                // Or if there's a createdAt field. Let's assume response might need sorting.
+                // response.data could be List<PostDto> or ApiResponse<List<PostDto>>
+                // Safely handle both
+                const fetchedPosts = Array.isArray(response.data) ? response.data : (response.data.data || []);
 
-                const fetchedPosts = response.data.data || [];
-
-                // Inject current user details into each post since PostDto doesn't contain them
-                // and we know these posts belong to the current user.
                 const enrichedPosts = fetchedPosts.map(post => ({
                     ...post,
                     username: currentUser.username,
@@ -62,9 +58,8 @@ function UserPosts() {
     }, [currentUser]);
 
     const handleProfileClick = (user) => {
-        // Map user data for ProfileDialog if needed, similar to Middle.js
         const userDto = {
-            id: user.user_id || user.id || user.userId,
+            id: user.userId || user.user_id || user.id,
             firstName: user.username,
             lastName: "",
             username: user.username,
@@ -76,6 +71,64 @@ function UserPosts() {
         setProfileOpen(true);
     };
 
+    const handleUpdate = async (postId, updatedData) => {
+        try {
+            const response = await postApi.updatePost(postId, updatedData);
+            // Expect response.data.data to be the updated PostDto
+            const updatedPost = response.data.data;
+            if (updatedPost) {
+                setPosts(prev => prev.map(p => p.postId === postId ? {
+                    ...p,
+                    ...updatedPost,
+                    // Preserve enriched fields if backend doesn't return them (likely)
+                    username: p.username,
+                    profile_image: p.profile_image,
+                    designation: p.designation
+                } : p));
+                toast.success("Post updated successfully");
+            }
+        } catch (error) {
+            console.error("Failed to update post:", error);
+            toast.error("Failed to update post");
+        }
+    };
+
+    const handleDelete = async (postId) => {
+        if (!window.confirm("Are you sure you want to delete this post?")) return;
+        try {
+            await postApi.deletePost(postId);
+            setPosts(prev => prev.filter(p => p.postId !== postId));
+            toast.success("Post deleted successfully");
+        } catch (error) {
+            console.error("Failed to delete post:", error);
+            toast.error("Failed to delete post");
+        }
+    };
+
+    const handleUpdateMedia = async (postId, file) => {
+        try {
+            const formData = new FormData();
+            formData.append('media', file);
+
+            const response = await postApi.updatePostMedia(postId, formData);
+            const updatedPost = response.data.data;
+
+            if (updatedPost) {
+                setPosts(prev => prev.map(p => p.postId === postId ? {
+                    ...p,
+                    ...updatedPost,
+                    username: p.username,
+                    profile_image: p.profile_image,
+                    designation: p.designation
+                } : p));
+                toast.success("Post image updated successfully");
+            }
+        } catch (error) {
+            console.error("Failed to update post media:", error);
+            toast.error("Failed to update post image");
+        }
+    };
+
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
@@ -85,10 +138,10 @@ function UserPosts() {
     }
 
     return (
-        <Box sx={{ minHeight: '100vh', backgroundColor: '#f0f2f5', pb: 4 }}>
+        <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default', pb: 4 }}>
             <Navbar userData={currentUser} />
             <Container maxWidth="md" sx={{ pt: 12 }}>
-                <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold', color: '#1a1a1a' }}>
+                <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold', color: 'text.primary' }}>
                     My Posts
                 </Typography>
 
@@ -99,6 +152,9 @@ function UserPosts() {
                                 key={post.postId}
                                 post={post}
                                 onProfileClick={handleProfileClick}
+                                onUpdate={handleUpdate}
+                                onDelete={handleDelete}
+                                onUpdateMedia={handleUpdateMedia}
                             />
                         ))
                     ) : (

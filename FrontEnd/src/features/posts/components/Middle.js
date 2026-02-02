@@ -43,7 +43,7 @@ function Middle({ userData }) {
 
         // Mapping post fields to user dto fields if necessary
         const userDto = {
-            id: user.user_id || user.id || user.userId, // Adaptation
+            id: user.userId || user.user_id || user.id, // Prioritize userId (Author) over id (Post ID in usePosts)
             firstName: user.username, // Fallback if firstName/lastName not separate in simple post mock
             lastName: "",
             username: user.username,

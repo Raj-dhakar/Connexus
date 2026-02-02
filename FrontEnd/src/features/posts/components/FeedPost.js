@@ -10,21 +10,71 @@ import {
     IconButton,
     Dialog,
     Skeleton,
-    Button
+    Button,
+    Menu,
+    MenuItem,
+    TextField,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    ListItemIcon
 } from '@mui/material';
 import {
     ThumbUpAlt as LikeIcon,
     ThumbUpOffAlt as LikeOutlinedIcon,
     Share as ShareIcon,
-    MoreVert as MoreVertIcon
+    MoreVert as MoreVertIcon,
+    Edit as EditIcon,
+    Delete as DeleteIcon
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
-const FeedPost = ({ post, onProfileClick }) => {
+const FeedPost = ({ post, onProfileClick, onUpdate, onDelete, onUpdateMedia }) => {
     const [expanded, setExpanded] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [liked, setLiked] = useState(false);
+
+    // Menu & Edit State
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [editData, setEditData] = useState({ title: post.title || '', description: post.description || '' });
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewImage, setPreviewImage] = useState(post.mediaUrl);
+
+    const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+    const handleMenuClose = () => setAnchorEl(null);
+
+    const handleEditClick = () => {
+        setEditData({ title: post.title || '', description: post.description || '' });
+        setPreviewImage(post.mediaUrl);
+        setSelectedFile(null);
+        setEditOpen(true);
+        handleMenuClose();
+    };
+
+    const handleDeleteClick = () => {
+        if (onDelete) onDelete(post.postId);
+        handleMenuClose();
+    };
+
+    const handleEditSave = () => {
+        if (onUpdate) onUpdate(post.postId, editData);
+        if (selectedFile && onUpdateMedia) onUpdateMedia(post.postId, selectedFile);
+        setEditOpen(false);
+    };
+
+    const handleEditChange = (e) => {
+        setEditData({ ...editData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            setPreviewImage(URL.createObjectURL(file));
+        }
+    };
 
     const toggleExpanded = () => setExpanded(!expanded);
     const handleLike = () => setLiked(!liked);
@@ -68,9 +118,31 @@ const FeedPost = ({ post, onProfileClick }) => {
                             </Typography>
                         </Box>
                         <Box sx={{ flexGrow: 1 }} />
-                        <IconButton>
-                            <MoreVertIcon />
-                        </IconButton>
+                        {(onUpdate || onDelete) && (
+                            <>
+                                <IconButton onClick={handleMenuOpen}>
+                                    <MoreVertIcon />
+                                </IconButton>
+                                <Menu
+                                    anchorEl={anchorEl}
+                                    open={Boolean(anchorEl)}
+                                    onClose={handleMenuClose}
+                                >
+                                    {onUpdate && (
+                                        <MenuItem onClick={handleEditClick}>
+                                            <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                                            Edit
+                                        </MenuItem>
+                                    )}
+                                    {onDelete && (
+                                        <MenuItem onClick={handleDeleteClick}>
+                                            <ListItemIcon><DeleteIcon fontSize="small" /></ListItemIcon>
+                                            Delete
+                                        </MenuItem>
+                                    )}
+                                </Menu>
+                            </>
+                        )}
                     </Box>
 
                     {/* Title */}
@@ -149,6 +221,62 @@ const FeedPost = ({ post, onProfileClick }) => {
                     style={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: 8 }}
                     onClick={() => setPreviewOpen(false)}
                 />
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth maxWidth="sm">
+                <DialogTitle>Edit Post</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mb: 2, textAlign: 'center' }}>
+                        {previewImage && (
+                            <img
+                                src={previewImage}
+                                alt="Post Media"
+                                style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, marginBottom: 10 }}
+                            />
+                        )}
+                        <Button
+                            variant="outlined"
+                            component="label"
+                            fullWidth
+                        >
+                            {selectedFile ? "Change Image" : "Upload New Image"}
+                            <input
+                                type="file"
+                                hidden
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
+                        </Button>
+                    </Box>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        name="title"
+                        label="Title"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        value={editData.title}
+                        onChange={handleEditChange}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="description"
+                        label="Description"
+                        multiline
+                        rows={4}
+                        fullWidth
+                        variant="outlined"
+                        value={editData.description}
+                        onChange={handleEditChange}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+                    <Button onClick={handleEditSave} variant="contained" color="primary">Save</Button>
+                </DialogActions>
             </Dialog>
         </>
     );

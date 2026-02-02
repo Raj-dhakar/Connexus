@@ -281,10 +281,10 @@ const ProfileDialog = ({ open, onClose, user }) => {
             onClose={onClose}
             TransitionComponent={Transition}
             PaperProps={{
-                sx: { bgcolor: '#f8fafc' }
+                sx: { bgcolor: 'background.default', backgroundImage: 'none' }
             }}
         >
-            <AppBar sx={{ position: 'relative', bgcolor: 'white', color: 'text.primary', boxShadow: 1 }}>
+            <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
                 <Toolbar>
                     <IconButton edge="start" color="inherit" onClick={onClose} aria-label="close">
                         <CloseIcon />
@@ -355,9 +355,10 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                         sx={{
                                             width: 160,
                                             height: 160,
-                                            border: '6px solid white',
+                                            border: '6px solid',
+                                            borderColor: 'background.paper',
                                             boxShadow: theme.shadows[3],
-                                            bgcolor: 'white'
+                                            bgcolor: 'background.paper'
                                         }}
                                     />
                                     {isOwnProfile && !isEditing && (
@@ -436,7 +437,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                 </Box>
 
                                 {/* Intro / Quick Details */}
-                                <Paper elevation={0} variant="outlined" sx={{ width: '100%', mt: 4, p: 3, borderRadius: 4, bgcolor: 'white' }}>
+                                <Paper elevation={0} variant="outlined" sx={{ width: '100%', mt: 4, p: 3, borderRadius: 4, bgcolor: 'background.paper' }}>
                                     <Stack spacing={2}>
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
                                             <Typography variant="subtitle1" fontWeight="bold">Intro</Typography>
@@ -607,7 +608,7 @@ const ProfileDialog = ({ open, onClose, user }) => {
                                         {userPosts.length > 0 ? (
                                             userPosts.map((post) => (
                                                 <Grid item xs={12} key={post.postId}>
-                                                    <Box sx={{ p: 2, bgcolor: '#f1f5f9', borderRadius: 2 }}>
+                                                    <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
                                                         <Typography variant="body2" color="text.secondary">
                                                             Posted an update
                                                         </Typography>

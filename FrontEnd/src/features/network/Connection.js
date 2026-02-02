@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import connectionApi from '../../api/connectionApi'
-import { Avatar, Button, List, ListItem, ListItemText, Paper } from '@mui/material'
+import { Avatar, Button, List, ListItem, ListItemText, Paper, Box } from '@mui/material'
 import { useLocation } from 'react-router-dom'
 import UserAvatar from '../common/UserAvatar'
 
@@ -60,18 +60,18 @@ function Connection() {
     if (userData.length === 0) return <div style={{ padding: "20px", textAlign: "center" }}>No suggestions available.</div>;
 
     return (
-        <div style={{ padding: "20px", backgroundColor: "#F6F7F3", height: "100vh" }}>
-            <div style={{ fontWeight: "bold", marginBottom: "10px", color: "#666" }}>People you may know</div>
+        <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary' }}>
+            <div style={{ fontWeight: "bold", marginBottom: "10px", color: "inherit" }}>People you may know</div>
             {userData.map((otherUser) => {
                 return (
-                    <Paper key={otherUser.id || otherUser.userId} sx={{ mb: 2 }}>
+                    <Paper key={otherUser.id || otherUser.userId} sx={{ mb: 2, bgcolor: 'background.paper', color: 'text.primary' }}>
                         <List>
                             <ListItem>
                                 <UserAvatar userId={otherUser.userId || otherUser.id} name={otherUser.name} sx={{ bgcolor: 'secondary.main' }} />
                                 <ListItemText
                                     primary={otherUser.name || otherUser.username || "Unknown"}
                                     secondary={otherUser.role || otherUser.designation || "Member"}
-                                    sx={{ ml: 2 }}
+                                    sx={{ ml: 2, '& .MuiListItemText-primary': { color: 'text.primary' }, '& .MuiListItemText-secondary': { color: 'text.secondary' } }}
                                 />
                                 <Button onClick={() => sendRequest(otherUser.userId || otherUser.id)} variant='outlined' size="small">Connect</Button>
                             </ListItem>
@@ -79,7 +79,7 @@ function Connection() {
                     </Paper>
                 )
             })}
-        </div>
+        </Box>
     )
 }
 

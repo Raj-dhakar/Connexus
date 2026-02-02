@@ -32,7 +32,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ModelMapper modelMapper;
     private final ConnectionsClient connectionClient;
-    //private final KafkaTemplate<Long, PostCreatedEvent> kafkaTemplate;
+    // private final KafkaTemplate<Long, PostCreatedEvent> kafkaTemplate;
     private final CloudinaryService cloudinaryService;
 
     public PostDto createPost(PostCreateRequestDto postDto, MultipartFile media) {
@@ -40,24 +40,23 @@ public class PostService {
         Post post = modelMapper.map(postDto, Post.class);
         post.setUserId(userId);
         if (media != null && !media.isEmpty()) {
-            String mediaUrl =
-                    cloudinaryService.uploadFile(media, "posts");
+            String mediaUrl = cloudinaryService.uploadFile(media, "posts");
             post.setMediaUrl(mediaUrl);
             log.info("Image url {}", mediaUrl);
         }
         Post savedPost = postRepository.save(post);
         /*
-        // Get first degree connections
-        // List<PersonDto> firstConnections = connectionClient.getFirstConnections();
-        // notify all users
-        PostCreatedEvent postCreatedEvent = PostCreatedEvent.builder()
-                .postId(savedPost.getId())
-                .creatorId(userId)
-                .title(savedPost.getTitle())
-                .build();
-
-        kafkaTemplate.send("post-created-topic", postCreatedEvent);
-
+         * // Get first degree connections
+         * // List<PersonDto> firstConnections = connectionClient.getFirstConnections();
+         * // notify all users
+         * PostCreatedEvent postCreatedEvent = PostCreatedEvent.builder()
+         * .postId(savedPost.getId())
+         * .creatorId(userId)
+         * .title(savedPost.getTitle())
+         * .build();
+         * 
+         * kafkaTemplate.send("post-created-topic", postCreatedEvent);
+         * 
          */
         return modelMapper.map(savedPost, PostDto.class);
     }
@@ -95,5 +94,53 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    public PostDto updatePost(Long postId, PostCreateRequestDto postDto) {
+        Long userId = UserContextHolder.getCurrentUserId();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
+
+        if (!post.getUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized access to update post");
+        }
+
+        // Map updates - naive approach, normally would check for nulls
+        if (postDto.getTitle() != null)
+            post.setTitle(postDto.getTitle());
+        if (postDto.getDescription() != null)
+            post.setDescription(postDto.getDescription());
+
+        post = postRepository.save(post);
+        return modelMapper.map(post, PostDto.class);
+    }
+
+    public void deletePost(Long postId) {
+        Long userId = UserContextHolder.getCurrentUserId();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
+
+        if (!post.getUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized access to delete post");
+        }
+
+        postRepository.delete(post);
+    }
+
+    public PostDto updatePostMedia(Long postId, MultipartFile media) {
+        Long userId = UserContextHolder.getCurrentUserId();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
+
+        if (!post.getUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized access to update post media");
+        }
+
+        if (media != null && !media.isEmpty()) {
+            String mediaUrl = cloudinaryService.uploadFile(media, "posts");
+            post.setMediaUrl(mediaUrl);
+            post = postRepository.save(post);
+        }
+
+        return modelMapper.map(post, PostDto.class);
+    }
 
 }

@@ -6,6 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="22073f7d-dbeb-4a6a-aade-6ff1c245d893" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/controller/PostsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/controller/PostsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/service/PostService.java" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/service/PostService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/post-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/api/postApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/api/postApi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/network/Connection.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/network/Connection.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/network/Invitation.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/network/Invitation.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/FeedPost.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/FeedPost.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/UserPosts.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/UserPosts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/profile/components/ProfileDialog.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/profile/components/ProfileDialog.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +79,9 @@
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;Spring Boot.ApiGatewayApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.ConnectionServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.DiscoveryServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.MessagingServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.PostServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.UserServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
@@ -120,7 +132,11 @@
         <entry key="SpringBootApplicationConfigurationType">
           <value>
             <map>
+              <entry key="ApiGatewayApplication" value="STOPPED" />
+              <entry key="ConnectionServiceApplication" value="STOPPED" />
+              <entry key="DiscoveryServiceApplication" value="STOPPED" />
               <entry key="MessagingServiceApplication" value="STOPPED" />
+              <entry key="PostServiceApplication" value="STOPPED" />
               <entry key="UserServiceApplication" value="STOPPED" />
             </map>
           </value>
@@ -128,7 +144,7 @@
       </map>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.MessagingServiceApplication">
+  <component name="RunManager" selected="Spring Boot.UserServiceApplication">
     <configuration name="DiscoveryServiceApplication" type="Application" factoryName="Application">
       <option name="ALTERNATIVE_JRE_PATH" value="21" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
@@ -235,6 +251,9 @@
       <workItem from="1769719578529" duration="6556000" />
       <workItem from="1769761286193" duration="9020000" />
       <workItem from="1769839237798" duration="10204000" />
+      <workItem from="1769937035402" duration="203000" />
+      <workItem from="1769946452043" duration="5063000" />
+      <workItem from="1770005725983" duration="3980000" />
     </task>
     <servers />
   </component>

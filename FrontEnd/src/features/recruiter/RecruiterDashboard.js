@@ -33,6 +33,7 @@ import useAuth from '../auth/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import ProfileDialog from '../profile/components/ProfileDialog';
 
 function RecruiterDashboard() {
     const [users, setUsers] = useState([]);
@@ -42,6 +43,8 @@ function RecruiterDashboard() {
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [profileOpen, setProfileOpen] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSkills, setSelectedSkills] = useState([]);
@@ -110,13 +113,22 @@ function RecruiterDashboard() {
                 if (response.data && response.data.data) {
                     const candidates = response.data.data
                         .filter(u => u.role !== "RECRUITER")
-                        .map(u => ({
-                            ...u,
-                            // Inject dummy data for demo purposes
-                            skills: ["React", "Node.js", "Java"].sort(() => 0.5 - Math.random()).slice(0, 2),
-                            location: ["New York", "London", "Remote"][Math.floor(Math.random() * 3)],
-                            experience: ["Junior", "Senior"][Math.floor(Math.random() * 2)]
-                        }));
+                        .map(u => {
+                            const expMapping = {
+                                "JUNIER": "Junior",
+                                "MIDLEVEL": "Mid-Level",
+                                "SENIOR": "Senior",
+                                "LEAD": "Lead",
+                                "MANAGER": "Manager"
+                            };
+
+                            return {
+                                ...u,
+                                skills: u.skills || [],
+                                location: u.location || "Not Specified",
+                                experience: expMapping[u.expType] || u.expType || "Not Specified"
+                            };
+                        });
                     setUsers(candidates);
                 }
             } catch (error) {
@@ -144,6 +156,11 @@ function RecruiterDashboard() {
         } else {
             setList([...list, item]);
         }
+    };
+
+    const handleViewProfile = (candidate) => {
+        setSelectedUser(candidate);
+        setProfileOpen(true);
     };
 
     const filteredUsers = users.filter(u => {
@@ -423,7 +440,9 @@ function RecruiterDashboard() {
                                                     </TableCell>
                                                     <TableCell align="right">
                                                         <Tooltip title="View Profile">
-                                                            <IconButton size="small"><VisibilityIcon fontSize="small" /></IconButton>
+                                                            <IconButton size="small" onClick={() => handleViewProfile(u)}>
+                                                                <VisibilityIcon fontSize="small" />
+                                                            </IconButton>
                                                         </Tooltip>
                                                         <Tooltip title="Contact">
                                                             <IconButton size="small"><EmailIcon fontSize="small" /></IconButton>
@@ -447,6 +466,11 @@ function RecruiterDashboard() {
                         </Paper>
                     </Grid>
                 </Grid>
+                <ProfileDialog
+                    open={profileOpen}
+                    onClose={() => setProfileOpen(false)}
+                    user={selectedUser}
+                />
             </Container>
         </Box>
     );
