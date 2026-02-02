@@ -34,6 +34,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import ProfileDialog from '../profile/components/ProfileDialog';
+import Navbar from '../layout/Navbar';
 
 function RecruiterDashboard() {
     const [users, setUsers] = useState([]);
@@ -208,6 +209,7 @@ function RecruiterDashboard() {
 
     return (
         <Box sx={{ minHeight: '100vh', pt: 12, pb: 4 }}>
+            <Navbar userData={user} />
             <Container maxWidth="xl" component={motion.div} variants={containerVariants} initial="hidden" animate="visible">
                 <Box sx={{ mb: 4 }}>
                     <Typography variant="h3" sx={{ fontWeight: 800, background: 'linear-gradient(to right, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>

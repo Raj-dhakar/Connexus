@@ -11,15 +11,17 @@ import {
     Container,
     useTheme
 } from '@mui/material';
-// import Navbar from '../layout/Navbar';
 import { Link, useLocation } from 'react-router-dom';
 import { Message as MessageIcon } from '@mui/icons-material';
 import connectionApi from '../../api/connectionApi';
 import UserAvatar from '../common/UserAvatar';
+import useAuth from '../auth/useAuth';
+import Navbar from '../layout/Navbar';
 
 function Network() {
     const location = useLocation();
     const theme = useTheme();
+    const { user } = useAuth(); // Get user from auth context
 
     const [connections, setConnections] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,7 +48,8 @@ function Network() {
     }, []);
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pt: 12 }}>
+            {user && <Navbar userData={user} />}
             <Box sx={{ p: 4 }}>
                 <Container maxWidth="lg">
                     {/* Invitation component removed as per request */}

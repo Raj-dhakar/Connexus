@@ -20,6 +20,9 @@ const userApi = {
     getProfileImage: (userId) => {
         return axiosInstance.get(`/users/${userId}/profile-image`);
     },
+    getRecruiterProfile: (userId) => {
+        return axiosInstance.get(`/recruiters/user/${userId}`);
+    },
     // Add other user related calls here
 };
 

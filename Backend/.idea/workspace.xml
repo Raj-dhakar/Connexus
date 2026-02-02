@@ -6,16 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="22073f7d-dbeb-4a6a-aade-6ff1c245d893" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/controller/PostsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/controller/PostsController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/service/PostService.java" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/java/com/connexus/post/service/PostService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/post-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/post-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/api/postApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/api/postApi.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/network/Connection.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/network/Connection.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/network/Invitation.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/network/Invitation.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/FeedPost.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/FeedPost.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/UserPosts.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/UserPosts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/profile/components/ProfileDialog.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/profile/components/ProfileDialog.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/connexus/user/controller/RecruiterController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/connexus/user/controller/RecruiterController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/connexus/user/service/RecruiterService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/connexus/user/service/RecruiterService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/recruiter/RecruiterDashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/recruiter/RecruiterDashboard.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -253,7 +246,7 @@
       <workItem from="1769839237798" duration="10204000" />
       <workItem from="1769937035402" duration="203000" />
       <workItem from="1769946452043" duration="5063000" />
-      <workItem from="1770005725983" duration="3980000" />
+      <workItem from="1770005725983" duration="6625000" />
     </task>
     <servers />
   </component>

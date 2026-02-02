@@ -14,63 +14,61 @@ import com.connexus.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
+
 @Service
 @Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class RecruiterService {
 
-    private final RecruiterRepository recruiterRepository;
-    private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+        private final RecruiterRepository recruiterRepository;
+        private final UserRepository userRepository;
+        private final ModelMapper modelMapper;
 
-    public RecruiterDto getRecruiterById(Long recruiterId) {
-        Recruiter recruiter = recruiterRepository.findById(recruiterId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Recruiter not found with id : " + recruiterId
-                        )
-                );
+        public RecruiterDto getRecruiterById(Long recruiterId) {
+                Recruiter recruiter = recruiterRepository.findById(recruiterId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Recruiter not found with id : " + recruiterId));
 
-        return modelMapper.map(recruiter, RecruiterDto.class);
-    }
+                return modelMapper.map(recruiter, RecruiterDto.class);
+        }
 
-    public List<RecruiterDto> getAllRecruiters() {
-        return recruiterRepository.findAll()
-                .stream()
-                .map(r -> modelMapper.map(r, RecruiterDto.class))
-                .toList();
-    }
+        public RecruiterDto getRecruiterByUserId(Long userId) {
+                Recruiter recruiter = recruiterRepository.findByUserId(userId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Recruiter not found with user id : " + userId));
+                return modelMapper.map(recruiter, RecruiterDto.class);
+        }
 
-    public RecruiterDto updateRecruiter(Long recruiterId, RecruiterDto dto) {
+        public List<RecruiterDto> getAllRecruiters() {
+                return recruiterRepository.findAll()
+                                .stream()
+                                .map(r -> modelMapper.map(r, RecruiterDto.class))
+                                .toList();
+        }
 
-        Recruiter recruiter = recruiterRepository.findById(recruiterId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Recruiter not found with id : " + recruiterId
-                        )
-                );
+        public RecruiterDto updateRecruiter(Long recruiterId, RecruiterDto dto) {
 
-        recruiter.setCompanyName(dto.getCompanyName());
-        recruiter.setCompanySize(dto.getCompanySize());
-        recruiter.setIndustry(dto.getIndustry());
+                Recruiter recruiter = recruiterRepository.findById(recruiterId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Recruiter not found with id : " + recruiterId));
 
-        return modelMapper.map(
-                recruiterRepository.save(recruiter),
-                RecruiterDto.class
-        );
-    }
+                recruiter.setCompanyName(dto.getCompanyName());
+                recruiter.setCompanySize(dto.getCompanySize());
+                recruiter.setIndustry(dto.getIndustry());
 
-    public void deleteRecruiter(Long recruiterId) {
-        Recruiter recruiter = recruiterRepository.findById(recruiterId)
-                .orElseThrow(() ->
-                new ResourceNotFoundException(
-                                "Recruiter not found with id : " + recruiterId
-                        )
-                );
-        log.info("Recuirters to be deleted {}" + recruiter);
+                return modelMapper.map(
+                                recruiterRepository.save(recruiter),
+                                RecruiterDto.class);
+        }
 
-        User user = recruiter.getUser();
-        user.setRecruiter(null);
-    }
+        public void deleteRecruiter(Long recruiterId) {
+                Recruiter recruiter = recruiterRepository.findById(recruiterId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Recruiter not found with id : " + recruiterId));
+                log.info("Recuirters to be deleted {}" + recruiter);
+
+                User user = recruiter.getUser();
+                user.setRecruiter(null);
+        }
 }

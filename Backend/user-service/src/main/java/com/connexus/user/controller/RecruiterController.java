@@ -16,40 +16,40 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RecruiterController {
 
-    private final RecruiterService recruiterService;
+        private final RecruiterService recruiterService;
 
-    @GetMapping("/{recruiterId}")
-    public ResponseEntity<RecruiterDto> getRecruiter(
-            @PathVariable Long recruiterId
-    ) {
-        return ResponseEntity.ok(
-                recruiterService.getRecruiterById(recruiterId)
-        );
-    }
+        @GetMapping("/{recruiterId}")
+        public ResponseEntity<RecruiterDto> getRecruiter(
+                        @PathVariable Long recruiterId) {
+                return ResponseEntity.ok(
+                                recruiterService.getRecruiterById(recruiterId));
+        }
 
-    @GetMapping
-    public ResponseEntity<List<RecruiterDto>> getAllRecruiters() {
-        return ResponseEntity.ok(
-                recruiterService.getAllRecruiters()
-        );
-    }
+        @GetMapping("/user/{userId}")
+        public ResponseEntity<RecruiterDto> getRecruiterByUserId(
+                        @PathVariable Long userId) {
+                return ResponseEntity.ok(
+                                recruiterService.getRecruiterByUserId(userId));
+        }
 
-    @PutMapping("/{recruiterId}")
-    public ResponseEntity<RecruiterDto> updateRecruiter(
-            @PathVariable Long recruiterId,
-            @RequestBody RecruiterDto dto
-    ) {
-        return ResponseEntity.ok(
-                recruiterService.updateRecruiter(recruiterId, dto)
-        );
-    }
+        @GetMapping
+        public ResponseEntity<List<RecruiterDto>> getAllRecruiters() {
+                return ResponseEntity.ok(
+                                recruiterService.getAllRecruiters());
+        }
 
-    @DeleteMapping("/{recruiterId}")
-    public ResponseEntity<Void> deleteRecruiter(
-            @PathVariable Long recruiterId
-    ) {
-        recruiterService.deleteRecruiter(recruiterId);
-        return ResponseEntity.noContent().build();
-    }
+        @PutMapping("/{recruiterId}")
+        public ResponseEntity<RecruiterDto> updateRecruiter(
+                        @PathVariable Long recruiterId,
+                        @RequestBody RecruiterDto dto) {
+                return ResponseEntity.ok(
+                                recruiterService.updateRecruiter(recruiterId, dto));
+        }
+
+        @DeleteMapping("/{recruiterId}")
+        public ResponseEntity<Void> deleteRecruiter(
+                        @PathVariable Long recruiterId) {
+                recruiterService.deleteRecruiter(recruiterId);
+                return ResponseEntity.noContent().build();
+        }
 }
-

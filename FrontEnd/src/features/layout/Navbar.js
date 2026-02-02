@@ -29,6 +29,7 @@ import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
 
 import ProfileDialog from '../profile/components/ProfileDialog'; // Import ProfileDialog
+import RecruiterProfileDialog from '../recruiter/components/RecruiterProfileDialog'; // Import RecruiterProfileDialog
 import { Person as PersonIcon } from '@mui/icons-material'; // Import PersonIcon
 
 function Navbar({ userData }) {
@@ -39,6 +40,8 @@ function Navbar({ userData }) {
 
     const [anchorElUser, setAnchorElUser] = useState(null);
     const [profileOpen, setProfileOpen] = useState(false); // State for ProfileDialog
+
+    const isRecruiter = userData?.role === 'ROLE_RECRUITER';
 
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);
@@ -61,7 +64,11 @@ function Navbar({ userData }) {
 
     const isActive = (path) => location.pathname === path;
 
-    const navItems = [
+    const navItems = isRecruiter ? [
+        { label: 'Dashboard', icon: <HomeIcon />, path: '/recruiter-dashboard' },
+        { label: 'Network', icon: <PeopleIcon />, path: '/network', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
+        { label: 'Messaging', icon: <MessageIcon />, path: '/message', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
+    ] : [
         { label: 'Home', icon: <HomeIcon />, path: '/main' },
         { label: 'Network', icon: <PeopleIcon />, path: '/network', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
         { label: 'Messaging', icon: <MessageIcon />, path: '/message', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
@@ -95,7 +102,7 @@ function Navbar({ userData }) {
                 <Typography
                     variant="h6"
                     component={Link}
-                    to="/main"
+                    to={isRecruiter ? "/recruiter-dashboard" : "/main"}
                     sx={{
                         fontWeight: 800,
                         background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
@@ -201,11 +208,19 @@ function Navbar({ userData }) {
             </Paper>
 
             {/* Profile Dialog */}
-            <ProfileDialog
-                open={profileOpen}
-                onClose={() => setProfileOpen(false)}
-                user={userData}
-            />
+            {isRecruiter ? (
+                <RecruiterProfileDialog
+                    open={profileOpen}
+                    onClose={() => setProfileOpen(false)}
+                    user={userData}
+                />
+            ) : (
+                <ProfileDialog
+                    open={profileOpen}
+                    onClose={() => setProfileOpen(false)}
+                    user={userData}
+                />
+            )}
         </Box>
     );
 }
