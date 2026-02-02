@@ -6,11 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="22073f7d-dbeb-4a6a-aade-6ff1c245d893" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/connexus/user/controller/RecruiterController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/connexus/user/controller/RecruiterController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/api/userApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/api/userApi.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/recruiter/RecruiterDashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/recruiter/RecruiterDashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/layout/Navbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/layout/Navbar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/layout/RightBar.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/layout/RightBar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/Filepost.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/Middle.js" beforeDir="false" afterPath="$PROJECT_DIR$/../FrontEnd/src/features/posts/components/Middle.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,6 +75,7 @@
     &quot;Spring Boot.ConnectionServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.DiscoveryServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.MessagingServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.NotificationServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.PostServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.UserServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
@@ -131,6 +131,7 @@
               <entry key="ConnectionServiceApplication" value="STOPPED" />
               <entry key="DiscoveryServiceApplication" value="STOPPED" />
               <entry key="MessagingServiceApplication" value="STOPPED" />
+              <entry key="NotificationServiceApplication" value="STOPPED" />
               <entry key="PostServiceApplication" value="STOPPED" />
               <entry key="UserServiceApplication" value="STOPPED" />
             </map>
@@ -248,7 +249,9 @@
       <workItem from="1769839237798" duration="10204000" />
       <workItem from="1769937035402" duration="203000" />
       <workItem from="1769946452043" duration="5063000" />
-      <workItem from="1770005725983" duration="10034000" />
+      <workItem from="1770005725983" duration="13434000" />
+      <workItem from="1770031812636" duration="1337000" />
+      <workItem from="1770046098055" duration="714000" />
     </task>
     <servers />
   </component>

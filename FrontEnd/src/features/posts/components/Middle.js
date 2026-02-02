@@ -11,13 +11,7 @@ import {
     IconButton,
     Stack
 } from '@mui/material';
-import {
-    Image as ImageIcon,
-    Event as EventIcon,
-    Article as ArticleIcon
-} from '@mui/icons-material';
 import Post from './Post';
-import Filepost from './Filepost';
 import FeedPost from './FeedPost';
 import usePosts from '../usePosts';
 
@@ -27,7 +21,6 @@ import ProfileDialog from '../../profile/components/ProfileDialog'; // Import Pr
 import { useState } from 'react';
 
 function Middle({ userData }) {
-    const filePostRef = useRef(null);
     const { posts, loading, hasMore, loadMore } = usePosts();
     const [postOpen, setPostOpen] = useState(false);
 
@@ -75,32 +68,6 @@ function Middle({ userData }) {
                         }}
                     />
                 </Box>
-                <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ px: 1 }}>
-                    <Button
-                        startIcon={<ImageIcon color="primary" />}
-                        onClick={() => filePostRef.current?.click()}
-                        sx={{ color: 'text.secondary' }}
-                    >
-                        Media
-                    </Button>
-                    <Button
-                        startIcon={<EventIcon color="warning" />}
-                        sx={{ color: 'text.secondary' }}
-                    >
-                        Event
-                    </Button>
-                    <Button
-                        startIcon={<ArticleIcon color="error" />}
-                        sx={{ color: 'text.secondary' }}
-                    >
-                        Article
-                    </Button>
-                </Stack>
-                {/* Hidden Modals Triggers */}
-                <Box sx={{ display: 'none' }}>
-                    <Filepost ref={filePostRef} />
-                </Box>
-
                 <Post open={postOpen} onClose={() => setPostOpen(false)} />
             </Card>
 

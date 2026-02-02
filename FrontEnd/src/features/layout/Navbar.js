@@ -65,7 +65,7 @@ function Navbar({ userData }) {
     const isActive = (path) => location.pathname === path;
 
     const navItems = isRecruiter ? [
-        { label: 'Dashboard', icon: <HomeIcon />, path: '/recruiter/dashboard' },
+        { label: 'Dashboard', icon: <HomeIcon />, path: '/recruiter-dashboard' },
         { label: 'Network', icon: <PeopleIcon />, path: '/network', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
         { label: 'Messaging', icon: <MessageIcon />, path: '/message', state: { currentUserProImg: userData?.profile_image, currentUserName: userData?.username } },
     ] : [
@@ -102,7 +102,7 @@ function Navbar({ userData }) {
                 <Typography
                     variant="h6"
                     component={Link}
-                    to={isRecruiter ? "/recruiter/dashboard" : "/main"}
+                    to={isRecruiter ? "/recruiter-dashboard" : "/main"}
                     sx={{
                         fontWeight: 800,
                         background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
