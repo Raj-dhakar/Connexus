@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Connexus.AdminService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a9942aae0046df01cc379816fddce2538e32114")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7782f9f3172bf6769327dbfa8681b59e2e9e7f69")]
 [assembly: System.Reflection.AssemblyProductAttribute("Connexus.AdminService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Connexus.AdminService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
