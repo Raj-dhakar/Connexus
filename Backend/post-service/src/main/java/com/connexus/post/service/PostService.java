@@ -34,7 +34,7 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final ModelMapper modelMapper;
     private final ConnectionsClient connectionClient;
-    // private final KafkaTemplate<Long, PostCreatedEvent> kafkaTemplate;
+    private final KafkaTemplate<Long, PostCreatedEvent> kafkaTemplate;
     private final CloudinaryService cloudinaryService;
 
     public PostDto createPost(PostCreateRequestDto postDto, MultipartFile media) {
@@ -47,19 +47,14 @@ public class PostService {
             log.info("Image url {}", mediaUrl);
         }
         Post savedPost = postRepository.save(post);
-        /*
-         * // Get first degree connections
-         * // List<PersonDto> firstConnections = connectionClient.getFirstConnections();
-         * // notify all users
-         * PostCreatedEvent postCreatedEvent = PostCreatedEvent.builder()
-         * .postId(savedPost.getId())
-         * .creatorId(userId)
-         * .title(savedPost.getTitle())
-         * .build();
-         * 
-         * kafkaTemplate.send("post-created-topic", postCreatedEvent);
-         * 
-         */
+        // notify all users
+        PostCreatedEvent postCreatedEvent = PostCreatedEvent.builder()
+                .postId(savedPost.getId())
+                .creatorId(userId)
+                .title(savedPost.getTitle())
+                .build();
+
+        kafkaTemplate.send("post-created-topic", postCreatedEvent);
         return modelMapper.map(savedPost, PostDto.class);
     }
 

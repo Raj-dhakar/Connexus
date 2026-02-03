@@ -1,6 +1,5 @@
 package com.connexus.post.service;
 
-
 import com.connexus.post.auth.UserContextHolder;
 import com.connexus.post.entity.Post;
 import com.connexus.post.entity.PostLike;
@@ -21,23 +20,23 @@ public class PostLikeService {
 
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postsRepository;
-    //private final KafkaTemplate<Long, PostLikedEvent> kafkaTemplate;
+    private final KafkaTemplate<Long, PostLikedEvent> kafkaTemplate;
 
     public void likePost(Long postId) {
         log.info("Attempting to like the post with id: {}", postId);
         Long userId = UserContextHolder.getCurrentUserId();
 
         Post post = postsRepository.findById(postId).orElseThrow(
-                () -> new ResourceNotFoundException("Post not found with id: "+postId));
+                () -> new ResourceNotFoundException("Post not found with id: " + postId));
 
         boolean alreadyLiked = postLikeRepository.existsByUserIdAndPostId(userId, postId);
-        if(alreadyLiked) throw new BadRequestException("Cannot like the same post again.");
+        if (alreadyLiked)
+            throw new BadRequestException("Cannot like the same post again.");
 
         PostLike postLike = new PostLike();
         postLike.setPostId(postId);
         postLike.setUserId(userId);
         postLikeRepository.save(postLike);
-        /*
         // Notify all users
         PostLikedEvent postLikedEvent = PostLikedEvent.builder()
                 .postId(postId)
@@ -45,8 +44,6 @@ public class PostLikeService {
                 .creatorId(post.getUserId()).build();
 
         kafkaTemplate.send("post-liked-topic", postId, postLikedEvent); // ordered by postId
-
-         */
         log.info("Post with id: {} liked successfully", postId);
     }
 
@@ -54,10 +51,12 @@ public class PostLikeService {
         Long userId = UserContextHolder.getCurrentUserId();
         log.info("Attempting to unlike the post with id: {}", postId);
         boolean exists = postsRepository.existsById(postId);
-        if(!exists) throw new ResourceNotFoundException("Post not found with id: "+postId);
+        if (!exists)
+            throw new ResourceNotFoundException("Post not found with id: " + postId);
 
         boolean alreadyLiked = postLikeRepository.existsByUserIdAndPostId(userId, postId);
-        if(!alreadyLiked) throw new BadRequestException("Cannot unlike the post which is not liked.");
+        if (!alreadyLiked)
+            throw new BadRequestException("Cannot unlike the post which is not liked.");
 
         postLikeRepository.deleteByUserIdAndPostId(userId, postId);
 

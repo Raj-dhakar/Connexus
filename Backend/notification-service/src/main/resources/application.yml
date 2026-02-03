@@ -7,4 +7,9 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json:
-          trusted.packages: com.connexus.connect.event.*
+          trusted.packages: "*"
+          type.mapping: >
+            com.connexus.connect.event.SendConnectionRequestEvent:com.connexus.notification.connection_service.event.SendConnectionRequestEvent,
+            com.connexus.connect.event.AcceptConnectionRequestEvent:com.connexus.notification.connection_service.event.AcceptConnectionRequestEvent,
+            com.connexus.post.event.PostCreatedEvent:com.connexus.notification.post_service.event.PostCreatedEvent,
+            com.connexus.post.event.PostLikedEvent:com.connexus.notification.post_service.event.PostLikedEvent
